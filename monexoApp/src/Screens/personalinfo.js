@@ -18,7 +18,10 @@ export default class personalinfo extends React.Component{
             sublocality:'',
             selectedButton:'',
             address:'',
-            showCircleImg:true
+            showCircleImg:true,
+            state:'',
+            city:''
+            
         };
         this.onSubmit = this.onSubmit.bind(this);
     }
@@ -54,12 +57,24 @@ export default class personalinfo extends React.Component{
             }
         }
         this.setState({ pincode: newText });
+       //console.log(text);
+    }
+
+    async fetchData(text) {
+        //console.log('test');
+        this.setState({text});
+        console.log(text);
+        const response = await fetch('https://api.data.gov.in/resource/0a076478-3fd3-4e2c-b2d2-581876f56d77?format=json&api-key=579b464db66ec23bdd000001be9925f848ef448249d6231c74b87637&filters[pincode]=600015');
+        const responseJson = await response.json();
+        return responseJson;
+        console.log(responseJson);
     }
 
     render(){
+      //  const {city,state} = this.state;
     return (
         <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
-        <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20}}>
+        <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
             <TouchableOpacity> 
                {/* <Image source={require('../../assets/cancel1.png')} style={styles.cancel} />*/}
                <Text style={{fontSize: 16,paddingRight:20}}> X </Text>
@@ -74,24 +89,39 @@ export default class personalinfo extends React.Component{
                 <Image source={require('../../assets/threedot.png')} style={{height:10,width:20, paddingTop:20,marginLeft:20}} />
             </TouchableOpacity>
         </View>
-        <View style={{height:40, backgroundColor:'#D1D1D1'}}>
+        <View style={{height:40, backgroundColor:'#D1D1D1', paddingTop:1,marginBottom:20}}>
         <View style={{flexDirection:'row',paddingLeft:20,paddingTop:10}}>
-        <View >
+        <View>
             {this.renderImage()}
         </View>
-        <View >
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:40,marginTop:10}}>
+        
+        </View>
+        <View>
             {this.renderImage()}
         </View>
-        <View >
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:40,marginTop:10}}>
+        
+        </View>
+        <View>
             {this.renderImage()}
         </View>
-        <View >
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:40,marginTop:10}}>
+        
+        </View>
+        <View>
             {this.renderImage()}
         </View>
-        <View >
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:40,marginTop:10}}>
+        
+        </View>
+        <View>
             {this.renderImage()}
         </View>
-        <View >
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:40,marginTop:10}}>
+        
+        </View>
+        <View>
             {this.renderImage()}
         </View>
         </View>
@@ -159,7 +189,7 @@ export default class personalinfo extends React.Component{
             <HelperText style={{color:'#111111', paddingLeft:10}}>Pin code</HelperText>
             <TextInput placeholder=' ' value={this.state.pincode}
             keyboardType='numeric' maxLength={6}
-            onChangeText={(text) => this.onChanged(text)}
+            onChangeText={(text) => {this.onChanged(text); this.fetchData(text);}}
             placeholderTextColor = "black" style={{marginLeft:-70, width:'90%', color:'black'}}
             />
             </View>
@@ -168,10 +198,10 @@ export default class personalinfo extends React.Component{
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Cityicon.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#111111'}}>City</HelperText>
-            <TextInput placeholder=' ' value={this.state.dob}
-            onChangeText={(dob) => {this.setState({dob})}} 
-            placeholderTextColor = "black" style={{marginLeft:-92, width:'90%', color:'black'}}
+            <TextInput placeholder=' ' value={this.state.city}
+            placeholderTextColor = "black" style={{marginLeft:-45, width:'90%', color:'black'}}
             />
+            <Text>{this.state.city}</Text>
             </View>
         </View>
         </View>
@@ -179,9 +209,8 @@ export default class personalinfo extends React.Component{
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Stateicon.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#000000'}}>State</HelperText>
-            <TextInput placeholder=' ' value={this.state.fullname}
-            onChangeText={(fullname) => {this.setState({fullname})}} 
-            placeholderTextColor = "black" style={{marginLeft:-75, width:'90%', color:'black'}}
+            <TextInput placeholder=' ' value={this.state.state}
+            placeholderTextColor = "black" style={{marginLeft:-55, width:'90%', color:'black'}}
             />
             </View>
         </View>
@@ -215,7 +244,7 @@ export default class personalinfo extends React.Component{
             />
             </View>
         </View>
-        <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor:'#2A9134',opacity:0.5}}
+        <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor:'#2A9134',opacity:0.5,marginBottom:20}}
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
         >
             <Text style={{textAlign:'center',paddingTop:7}}>

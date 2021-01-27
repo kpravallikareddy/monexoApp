@@ -3,6 +3,7 @@ import {View,Image, AsyncStorage,Platform,Dimensions,Animated} from 'react-nativ
 import {createAppContainer} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
 import personalinfo from '../src/Screens/personalinfo'
+import ocr from '../src/Screens/ocr'
 
 class LaunchScreen extends React.Component{
     constructor(props){
@@ -67,10 +68,16 @@ export const AppNavigator = createStackNavigator(
               headerShown:false,
           }),
       },
+      ocr: {
+        screen: ocr,
+        navigationOptions:({navigation}) =>({
+          headerShown:false,
+        }),
+      },
 
     },
     {
-        initialRouteName:'Personalinfo',
+        initialRouteName:'ocr',
     },
 );
 const AppContainer = createAppContainer(AppNavigator);
