@@ -1,10 +1,12 @@
-import React from 'react';
-import {View, Text, Image, TouchableOpacity, TouchableHighlight, ScrollView, Dimensions, Alert} from 'react-native';
+import React, {Component} from 'react';
+import {View, Text,TextInput, Image, TouchableOpacity, TouchableHighlight, ScrollView, Dimensions, Alert} from 'react-native';
 import styles from '../Styles/personalinfostyles';
-import {TextInput, HelperText} from 'react-native-paper';
+import {HelperText} from 'react-native-paper';
 import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
-//import {oauth, network, smartstore, mobilesync} from 'react-native-force';
+import DatePicker from 'react-native-datepicker';
+//import { ModalDatePicker } from "react-native-material-date-picker";
+//import { TextField } from 'react-native-materialui-textfield';
 
 const regex = /^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$/
 
@@ -23,6 +25,7 @@ export default class personalinfo extends React.Component{
         this.state={
             fullname:'',
             dob:'',
+            date:'',
             fathername:'',
             pincode:'',
             locality:'',
@@ -34,8 +37,11 @@ export default class personalinfo extends React.Component{
             city:' ',
             ButtonStateHolder:true,
             pannumber:null,
-            email:'',
+            email:null,
             validPan: false,
+            visible: false,
+            errorStatus: false,
+            validEmail:false,
         };
         this.onSubmit = this.onSubmit.bind(this);
         this.fetchData = this.fetchData.bind(this);
@@ -84,50 +90,32 @@ export default class personalinfo extends React.Component{
        //console.log(text);
     }
 
-    /*onChangePan = (text) => {  
-        let pannumber = this.state.pannumber;
-       // event.preventDefault();
-        if(pancardValidation(text)) {
-            pannumber = pancardValidation.test(text) ? '': 'Pan is not valid';
-        }
-        this.setState({pannumber:text});
-    } */
-    
-    /*onChangePan(text) {
-        console.log(text);
-       let newtext: '';
-       var regex = /^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$/
-     
-      if(text != '') {  
-            // if(!/^[0-9]+$/.test(text)){
-            if(regex.test(text)){
-                // newtext = text;
-                alert('valid');
-                this.setState({isDisabled:true})
-             } 
-             //else {
-                 //console.log('success');
-               //  alert('not valid');
-             //}
-            //alert('valid pan number');  
-        }
-        this.setState({ pannumber: newtext });
-    }*/
-
     onChangePan(pannumber){
         const regex = /^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$/
         this.setState({pannumber});
 
         if(regex.test(pannumber)) {
             console.log('Pan number is valid');
-            this.setState({validPan: true});
+            this.setState({validPan: true, errorStatus:false});
         }
         else if (!regex.test(pannumber)) {
             console.log('Pan is not valid');
-            this.setState({validPan: false});
+            this.setState({validPan: false, errorStatus:true});
         }
     }
 
+    onChangeEmail(email) {
+        this.setState({email});
+        const pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+       if(pattern.test(email)) {
+           console.log('email valid');
+           this.setState({validEmail:true,errorStatus:false});
+       }
+       else if(!pattern.test(email)) {
+           console.log('email invalid');
+           this.setState({validEmail:false,errorStatus:true});
+       }
+   }
 
     
     fetchData = (text) => {
@@ -153,7 +141,7 @@ export default class personalinfo extends React.Component{
 
     render(){
         const {city,state} = this.state;
-        const {validPan,pannumber} = this.state;
+        const {validPan,pannumber, validEmail, email,date} = this.state;
     return (
         <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
         <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
@@ -171,7 +159,7 @@ export default class personalinfo extends React.Component{
                 <Image source={require('../../assets/threedot.png')} style={{height:10,width:20, paddingTop:20,marginLeft:20}} />
             </TouchableOpacity>
         </View>
-        <View style={{height:40, backgroundColor:'#D1D1D1', paddingTop:1,marginBottom:20}}>
+        <View style={{height:40, backgroundColor:'rgba(65, 161, 127, 0.1)', paddingTop:1,marginBottom:20}}>
         <View style={{flexDirection:'row',paddingLeft:20,paddingTop:10}}>
         <View>
         <Image style={{height:20, width:20}}
@@ -196,17 +184,18 @@ export default class personalinfo extends React.Component{
         </View>
         
         <ScrollView>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5}}>
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:0,marginBottom:0, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Profile.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#000000'}}>Fullname</HelperText>
-            <TextInput placeholder=' ' value={this.state.fullname}
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Fullname</HelperText>
+            <TextInput placeholder=' ' autoCapitalize = 'words' value={this.state.fullname}
             onChangeText={(fullname) => {this.setState({fullname})}} 
-            placeholderTextColor = "black" style={{marginLeft:-75, width:'90%', color:'black', fontFamily:'Nunito', fontWeight:'400'}}
+            placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-70,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
         </View>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5, width:'40%'}}>
+        
+        {/*<View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5, width:'40%'}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Birthday.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#111111'}}>Date of Birth</HelperText>
@@ -215,21 +204,68 @@ export default class personalinfo extends React.Component{
             placeholderTextColor = "black" style={{marginLeft:-92, width:'90%', color:'black'}}
             />
             </View>
-        </View>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5}}>
+    </View>*/}
+        
+        <DatePicker
+          style={{width: 160,
+            marginTop: 20,marginBottom: 20,backgroundColor:'#EEEEEE', marginLeft:20, borderBottomWidth:0.5,borderBottomColor:'#000000'}}
+          date={date} // Initial date from state
+          mode="date" // The enum of date, datetime and time
+          placeholder="Date of Birth"
+          format="DD-MM-YYYY"
+          minDate="01-01-2016"
+          maxDate="01-31-2100"
+          confirmBtnText="Confirm"
+          cancelBtnText="Cancel"
+          customStyles={{
+            dateIcon: {
+              //display: 'none',
+              position: 'absolute',
+              left: 0,
+              top: 4,
+              marginLeft: 5,
+            },
+            dateInput: {
+              marginLeft: 20,
+              borderWidth:0,
+              borderBottomColor:'#000000', opacity:0.2,
+              borderBottomWidth:1,
+            },
+            dateText: {
+                color: '#000000',
+                fontFamily:'Roboto',
+                fontWeight:'bold'
+              }
+          }}
+          //onDateChange={this.setState(date)}
+          onDateChange={(date) => {this.setState({date})}} 
+          //onChangeText={this.onChangeEmail.bind(this)}
+        />
+        {/*<View style={{flex: 1, alignSelf: 'stretch'}}>
+        <ModalDatePicker 
+            button={<Text> Open </Text>} 
+            locale="tr" 
+            onSelect={(date) => console.log(date) }
+            isHideOnSelect={true}
+            initialDate={new Date()}
+            //language={require('./locales/en.json')}. # Your localization file
+            />             
+            </View>*/}
+            
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:0,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Profile.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#000000'}}>Father's / Spouse name</HelperText>
-            <TextInput placeholder=' ' value={this.state.fathername}
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Father's / Spouse name</HelperText>
+            <TextInput placeholder=' ' autoCapitalize = 'words' value={this.state.fathername}
             onChangeText={(fathername) => {this.setState({fathername})}} 
-            placeholderTextColor = "black" style={{marginLeft:-75, width:'90%', color:'black'}}
+            placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-145,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
         </View>
         <Text style={{marginLeft:20, fontSize:12, paddingTop:10,paddingBottom:5,color:'#444444'}}>
             Gender
         </Text>
-        <View style={{flexDirection:'row'}}>
+        <View style={{flexDirection:'row', marginBottom:20}}>
         <TouchableOpacity onPress={() => this.setState({ selectedButton:'male'})} style={{marginRight:20,borderWidth:1,marginLeft:20,height:30,borderRadius:5,backgroundColor:this.state.selectedButton === 'male' ? '#2A9134':'#D1D1D1',opacity:0.5,width:'25%'}}>
             <View style={{flexDirection:'row',padding:5,justifyContent:'center'}}>
             <Image source={require('../../assets/maleiconselected.png')} resizeMode='contain' style={{height:15,width:15,flex:.3}} />
@@ -247,81 +283,88 @@ export default class personalinfo extends React.Component{
             </View>
         </TouchableOpacity>
         </View>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:20,marginBottom:0, borderRadiusTopLeft:5,borderRadiusTopRight:5}}>
+
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:0,marginBottom:-5, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Profile.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#000000'}}>Personal Email-ID</HelperText>
-            <TextInput placeholder=' ' value={this.state.email}
-            onChangeText={(email) => {this.setState({email})}} 
-            placeholderTextColor = "black" style={{marginLeft:-75, width:'90%', color:'black'}}
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Personal Email-ID</HelperText>
+            <TextInput placeholder=' '  autoCapitalize='none'
+            autoCorrect={false} value={email}
+            //onChangeText={(email) => {this.setState({email})}} 
+            onChangeText={this.onChangeEmail.bind(this)}
+            placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-110,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
+            {this.state.errorStatus == true ? (
+            <Text style={{color:'red', fontSize:12, marginLeft:0, marginTop:-5}}> Email is not valid</Text>
+            ) : null}
         </View>
-        <Text style={{marginLeft:20, fontSize:12, paddingTop:20,paddingBottom:0,color:'#444444'}}>
+        <Text style={{marginLeft:20, fontSize:12, paddingTop:25,paddingBottom:5,color:'#444444'}}>
             Current Address
         </Text>
         <View style={{flexDirection:'row'}}> 
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5, width:'30%'}}>
+        <View style={{height:48,width:'30%',borderBottomColor:'#000000',borderBottomWidth:0.5, marginLeft:20,marginRight:0,backgroundColor:'#EEEEEE',marginTop:10,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Pincode.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#111111', paddingLeft:10}}>Pin code</HelperText>
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Pin code</HelperText>
             <TextInput placeholder=' ' value={this.state.pincode}
             keyboardType='numeric' maxLength={6}
             onChangeText={(text) => {this.onChanged(text); this.fetchData(text);}}
-            placeholderTextColor = "black" style={{marginLeft:-70, width:'90%', color:'black'}}
+            placeholderTextColor = "rgba(0,0,0,0.3)" style={{flex:1,marginTop: 10,marginLeft:-65,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
         </View>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, marginLeft:10, marginRight:10,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5, width:'50%'}}>
+        <View style={{height:48,width:'55%',borderBottomColor:'#000000',borderBottomWidth:0.5, marginLeft:15,marginRight:0,backgroundColor:'#EEEEEE',marginTop:10,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Cityicon.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#111111'}}>City</HelperText>
-            <TextInput placeholder=' ' importantForAutoFill='yes' value={city}
-            placeholderTextColor = "black" style={{marginLeft:-45, width:'90%', color:'black',fontFamily:'Nunito'}}
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>City</HelperText>
+            <TextInput placeholder=' ' autoCapitalize = 'words' importantForAutoFill='yes' value={city}
+            placeholderTextColor = "rgba(0,0,0,0.3)" style={{flex:1,marginTop: 10,marginLeft:-40,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             
             </View>
         </View>
         </View>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5}}>
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:15,marginBottom:20, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Stateicon.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#000000'}}>State</HelperText>
-            <TextInput placeholder=' ' importantForAutoFill='yes' value={state}
-            placeholderTextColor = "black" style={{marginLeft:-55, width:'90%', color:'black'}}
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>State</HelperText>
+            <TextInput placeholder=' ' autoCapitalize = 'words' importantForAutoFill='yes' value={state}
+            placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-50,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             
             </View>
         </View>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5}}>
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:5,marginBottom:20, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Localityicon.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#000000'}}>Locality</HelperText>
-            <TextInput placeholder=' ' value={this.state.locality}
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Locality</HelperText>
+            <TextInput placeholder=' ' autoCapitalize = 'words' value={this.state.locality}
             onChangeText={(locality) => {this.setState({locality})}} 
-            placeholderTextColor = "black" style={{marginLeft:-75, width:'90%', color:'black'}}
+            placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-60,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
         </View>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5}}>
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:5,marginBottom:20, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Sublocalityicon.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#000000'}}>Sublocality</HelperText>
-            <TextInput placeholder=' ' value={this.state.sublocality}
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Sublocality</HelperText>
+            <TextInput placeholder=' ' autoCapitalize = 'words' value={this.state.sublocality}
             onChangeText={(sublocality) => {this.setState({sublocality})}} 
-            placeholderTextColor = "black" style={{marginLeft:-75, width:'90%', color:'black'}}
+            placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-75,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
         </View>
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:10,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5}}>
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:5,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Currentaddressicon.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#000000',fontSize:8}}>Door/Flat No. & Block NO. Flat/Building name, Street No. Street name</HelperText>
-            <TextInput placeholder=' ' value={this.state.address}
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0,fontSize:8}}>Door/Flat No. & Block NO. Flat/Building name, Street No. Street name</HelperText>
+            <TextInput placeholder=' ' autoCapitalize = 'words' value={this.state.address}
             onChangeText={(address) => {this.setState({address})}} 
-            placeholderTextColor = "black" style={{marginLeft:-75, width:'90%', color:'black'}}
+            placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-265,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
+            
         </View>
         <View style={{marginLeft:20,marginTop:15}}>
             <Text >Profession</Text>
@@ -330,7 +373,7 @@ export default class personalinfo extends React.Component{
         <TouchableOpacity style={{borderWidth:1,height:35,borderRadius:5,backgroundColor:this.state.selectedButton === 'salaried-pvt ltd' ? '#2A9134':'#D1D1D1',opacity:0.5,marginBottom:20}}
             //onPress={() => this.setState({ selectedButton:'salaried-pvt ltd'})}
             // onPress={() => this.setState({ButtonStateHolder : false})}
-            onPress={() => this.setState({selectedButton:'salaried-pvt ltd', ButtonStateHolder : false})}
+            onPress={() => this.setState({selectedButton:'salaried-pvt ltd', ButtonStateHolder : false, visible:true})}
         >
             <View style={{flexDirection:'row', padding:5,alignItems:'center',justifyContent:'center'}}>
             <Image source={require('../../assets/Salaried.png')} style={{height:15,width:15}} />
@@ -345,7 +388,7 @@ export default class personalinfo extends React.Component{
         <TouchableOpacity style={{borderWidth:1,height:35,borderRadius:5,backgroundColor:this.state.selectedButton === 'salaried-public ltd' ? '#2A9134':'#D1D1D1',opacity:0.5,marginBottom:20}}
             //onPress={() => this.setState({ selectedButton:'salaried-public ltd'})}
             //onPress={() => this.setState({ButtonStateHolder : false})}
-            onPress={() => this.setState({selectedButton:'salaried-public ltd', ButtonStateHolder : false})}
+            onPress={() => this.setState({selectedButton:'salaried-public ltd', ButtonStateHolder : false,visible:true})}
         >
             <View style={{flexDirection:'row', padding:5,alignItems:'center',justifyContent:'center'}}>
             <Image source={require('../../assets/Salaried.png')} style={{height:15,width:15}} />
@@ -363,7 +406,7 @@ export default class personalinfo extends React.Component{
             //onPress={() => this.setState({ selectedButton:'salaried-central govt'})}
             //onPress={this.EnableButtonFunction}
             //onPress={() => this.setState({ButtonStateHolder : false})}
-            onPress={() => this.setState({selectedButton:'salaried-central govt', ButtonStateHolder : false})}
+            onPress={() => this.setState({selectedButton:'salaried-central govt', ButtonStateHolder : false,visible:true})}
         >
             <View style={{flexDirection:'row', padding:5,alignItems:'center',justifyContent:'center'}}>
             <Image source={require('../../assets/central_gov.png')} style={{height:15,width:15}} />
@@ -379,7 +422,7 @@ export default class personalinfo extends React.Component{
             //onPress={() => this.setState({ selectedButton:'salaried-state govt'})}
             //onPress={this.EnableButtonFunction}
             //onPress={() => this.setState({ButtonStateHolder : false})}
-            onPress={() => this.setState({selectedButton:'salaried-state govt', ButtonStateHolder : false})}
+            onPress={() => this.setState({selectedButton:'salaried-state govt', ButtonStateHolder : false,visible:true})}
         >
             <View style={{flexDirection:'row', padding:5,alignItems:'center',justifyContent:'center'}}>
             <Image source={require('../../assets/State_gov.png')} style={{height:15,width:15}} />
@@ -396,7 +439,7 @@ export default class personalinfo extends React.Component{
         <TouchableOpacity style={{borderWidth:1,height:35,borderRadius:5,backgroundColor:this.state.selectedButton === 'salaried-llp' ? '#2A9134':'#D1D1D1',opacity:0.5,marginBottom:20}}
             //onPress={() => this.setState({ selectedButton:'salaried-llp'})}
             //onPress={this.EnableButtonFunction}
-            onPress={() => this.setState({selectedButton:'salaried-llp', ButtonStateHolder : false})}
+            onPress={() => this.setState({selectedButton:'salaried-llp', ButtonStateHolder : false,visible:true})}
         >
             <View style={{flexDirection:'row', padding:5,alignItems:'center',justifyContent:'center'}}>
             <Image source={require('../../assets/Salaried.png')} style={{height:15,width:15}} />
@@ -432,24 +475,29 @@ export default class personalinfo extends React.Component{
         </TouchableOpacity>
         </View>
         </View>
-
-        <View style={{height:40,borderBottomColor:'#000000',borderBottomWidth:1, margin:20,backgroundColor:'gray',opacity:0.1,marginTop:0,marginBottom:10, borderRadiusTopLeft:5,borderRadiusTopRight:5}}>
+        {this.state.visible == true ?
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:0,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
-                <Image source={require('../../assets/Profile.png')} style={{height:20,width:20,marginTop:15}} />
-            <HelperText style={{color:'#000000'}}>Pan number</HelperText>
-            <TextInput placeholder=' ' value={pannumber}
-            //onChangeText={text => this.onChangePan(text)}
-            //onChange={this.handleChange}
+                <Image source={require('../../assets/pan.png')} style={{height:20,width:20,marginTop:15}} />
+            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Pan number</HelperText>
+            <TextInput placeholder=' ' value={pannumber} autoCapitalize = 'characters'
             onChangeText={this.onChangePan.bind(this)}
-            placeholderTextColor = "black" maxLength={10} style={{marginLeft:-85, width:'90%', color:'black', fontFamily:'Nunito', fontWeight:'400'}}
+            placeholderTextColor = "#000000" maxLength={10} style={{flex:1,marginTop: 10,marginLeft:-80,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
-        </View>
+            {this.state.errorStatus == true ? (
+            <Text style={{color:'red', fontSize:12, marginLeft:0, marginTop:-5}}> PAN number is not valid</Text>
+            ) : null}
+            
+    </View>
+    :
+    <Text></Text>
+        }
 
-        <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? '#2A9134':'#2A9134', opacity:0.5,marginBottom:20}}
+        <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? '#2A9134':'#2A9134', opacity:0.5,marginBottom:20,}}
             disabled={this.state.ButtonStateHolder || !this.state.validPan}
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
-            onPress={() => this.props.navigation.navigate('preoffer')}
+            onPress={() => this.props.navigation.navigate('bankdetails')}
         >
             <Text style={{textAlign:'center',paddingTop:7}}>
                 Submit

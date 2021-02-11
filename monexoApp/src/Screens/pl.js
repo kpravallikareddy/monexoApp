@@ -10,11 +10,13 @@ import LottieView from 'lottie-react-native';
 import SliderText from 'react-native-slider-text';
 //import Slider from "react-native-slider";
 import Slider from '@react-native-community/slider';
+import { ScrollView } from "react-native-gesture-handler";
 
 
-const maximumValue=50000;
+const maximumValueamount=500000;
+const maximumValueduration = 36;
 const { height, width } = Dimensions.get('window')
-export default class Preoffer extends React.Component {
+export default class Pl extends React.Component {
     
     constructor(props){
         super(props);
@@ -22,7 +24,8 @@ export default class Preoffer extends React.Component {
             showCircleImg:true,
             termsAccepted: false,
             checked: false,
-            sliderValue:maximumValue/2,
+            sliderValueamount:maximumValueamount/2,
+            sliderValueduration:maximumValueduration/2,
             value:0.2,
             
         }
@@ -54,14 +57,14 @@ export default class Preoffer extends React.Component {
         return (
             <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
             <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
-                <TouchableOpacity> 
-                   {/* <Image source={require('../../assets/cancel1.png')} style={styles.cancel} />*/}
+                {/*<TouchableOpacity> 
+                   {/* <Image source={require('../../assets/cancel1.png')} style={styles.cancel} />
                    <Text style={{fontSize: 16,paddingRight:20}}> X </Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>
                     Preliminary offer
-                </Text>
-                <TouchableOpacity>
+                </Text>*/}
+                <TouchableOpacity style={{paddingLeft:160}}>
                     <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:100}} />
                 </TouchableOpacity>
                 <TouchableOpacity>
@@ -112,10 +115,12 @@ export default class Preoffer extends React.Component {
                 ref={animation => { this.anim = animation; }} 
                 />
             </View>
-            <Text style={{fontSize:20}}>
+            
+            <Text style={{fontSize:20,}}>
                 Congratulations
             </Text>
             </View>
+            {/*<ScrollView>*/}
             {/*<View style={{marginBottom:0, marginTop:-30}}>
                 <LottieView 
                 source={require('../../json/confetti-cannons.json')}
@@ -126,15 +131,15 @@ export default class Preoffer extends React.Component {
                 ref={animation => { this.anim = animation; }} 
                 />
             </View>*/}
-            <View style={{marginTop:20, alignItems:'center', borderBottomWidth:0.5, borderBottomColor:'#D1D1D1', margin:30,paddingBottom:20}}> 
+            <View style={{marginTop:10, alignItems:'center', borderBottomWidth:0.5, borderBottomColor:'#D1D1D1', margin:30,paddingBottom:20}}> 
                 <Text style={{paddingBottom:5, fontFamily:'Nunito',fontWeight:'bold'}}>
-                You are pre-qualified 
+                You are Qualified 
                 </Text>
                 <Text style={{fontFamily:'Nunito',fontWeight:'bold'}}>
-                for Credit line upto {'\u20B9'}50,000
+                for Personal loan upto {'\u20B9'}5,00,000
                 </Text>
             </View>
-            <View style={{alignItems:'center', marginTop:-8}}>
+            <View style={{alignItems:'center', marginTop:-20}}>
                 <Text>
                     You will pay for what you use nothing extra.
                 </Text>
@@ -186,21 +191,48 @@ export default class Preoffer extends React.Component {
             
         />*/}
 
+            <View style={{marginLeft:20, marginTop:10, marginBottom:-20}}>
+                <Text>
+                    Loan amount
+                </Text>
+            </View>
+
             <SliderText 
-            maximumValue={50000} 
+            maximumValue={500000} 
             stepValue={1000} 
-            minimumValueLabel="1000" 
-            maximumValueLabel="50000" 
-            onValueChange={(sliderValue) => this.setState({sliderValue})}
-            sliderValue={this.state.sliderValue} 
+            minimumValueLabel="50000" 
+            maximumValueLabel="500000" 
+            onValueChange={(sliderValue) => this.setState({sliderValueamount})}
+            sliderValue={this.state.sliderValueamount} 
             minimumTrackTintColor="#006202"
             maximumTrackTintColor="#61C261"
             thumbTintColor='#61C261'
-            customLabelStyle={{marginTop:-20, fontSize:12}}
+            customLabelStyle={{marginTop:-20, fontSize:12,marginLeft:10}}
             customCountStyle={{marginBottom:-20, fontSize:9, marginLeft:10, marginRight:20}}
             />
 
-            <View style={{alignItems:'center'}}>  
+            <View style={{marginLeft:20, marginTop:-15, marginBottom:-20}}>
+                <Text>
+                    Loan duration
+                </Text>
+            </View>
+
+            <SliderText 
+            maximumValue={36} 
+            stepValue={3} 
+            minimumValueLabel="6 months" 
+            maximumValueLabel="36 months" 
+            onValueChange={(sliderValue) => this.setState({sliderValueduration})}
+            sliderValue={this.state.sliderValueduration} 
+            minimumTrackTintColor="#006202"
+            maximumTrackTintColor="#61C261"
+            thumbTintColor='#61C261'
+            customLabelStyle={{marginTop:-20, fontSize:12, marginLeft:10}}
+            customCountStyle={{marginBottom:-20, fontSize:9, marginLeft:10, marginRight:20}}
+            />
+
+
+            <View style={{alignItems:'center', paddingTop:0, marginTop:-5}}>  
                 <Text style={{paddingBottom:5}}>
                     You have selected a credit line at 
                 </Text>
@@ -208,24 +240,25 @@ export default class Preoffer extends React.Component {
                     an interest rate of {'\u20B9'}5 for a thousand per day.(APR 2.5%)
                 </Text>
             </View>
-            <View style={{flexDirection:'row', justifyContent:'center', marginTop:20}}>
+            <View style={{flexDirection:'row', justifyContent:'center', marginTop:10}}>
             <CheckBox
                 onChange={() => this.setState({checked:!checked})}
             />
             <Text style={{marginTop: 5}}> I agree with the </Text>
             <Text style={{marginTop:5, fontWeight:'bold', color:'#61C261',textDecorationLine: 'underline'}}>Legal agreements</Text>
             </View>
-            <View style={{alignItems:'center', marginTop:20}}>
+            <View style={{alignItems:'center', marginTop:10}}>
             <TouchableOpacity style={{marginRight:20,width:'30%',borderWidth:1,height:35,borderRadius:5,backgroundColor:'#2A9134',opacity:0.5,marginBottom:20}}
             disabled={!checked}
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
-            onPress={() => this.props.navigation.navigate('dc')}
+            onPress={() => this.props.navigation.navigate('rejected')}
         >
             <Text style={{textAlign:'center',paddingTop:7}}>
                 Get now
             </Text>
         </TouchableOpacity>
             </View>
+            {/*</ScrollView>*/}
             </View>
         );
     }

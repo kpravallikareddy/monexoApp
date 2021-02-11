@@ -14,6 +14,8 @@ target 'monexoApp' do
 
   pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
 
+  pod 'react-native-camera', :path => '../node_modules/react-native-camera'
+
   target 'monexoAppTests' do
     inherit! :complete
     # Pods for testing
