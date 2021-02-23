@@ -60,6 +60,8 @@ export default class Employerdetails extends React.Component{
             path:null,
             img: '',
             show:false,
+            payslip:false,
+            id_card:false,
         };
         this.onSubmit = this.onSubmit.bind(this);
         this.fetchData = this.fetchData.bind(this);
@@ -84,12 +86,6 @@ export default class Employerdetails extends React.Component{
             console.error('capture picture error', err);
           });
       }
-    
-
-
-
-
-
    
     EnableButtonFunction =()=>{
         this.setState({
@@ -137,6 +133,44 @@ export default class Employerdetails extends React.Component{
        //console.log(text);
     }
 
+    insertdata_into_db = async () => {
+        console.log('test');
+       await fetch('http://10.0.2.2:8000/employerdetails/',
+      {
+        method:'POST',
+        headers:{
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body:
+          JSON.stringify(
+              {
+            appid: '12345',
+            employer_name:this.state.employername,
+            official_email:this.state.noemail,
+            official_email_id:this.state.email,
+            pincode:this.state.pincode,
+            city:this.state.city,
+            state:this.state.state,
+            locality:this.state.locality,
+            sublocality:this.state.sublocality,
+            address:this.state.address,
+            employee_id_card:this.state.noemail,
+            payslip:this.state.payslip,
+            confirmation_for_id_card:this.state.noemail,
+          }
+          )
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    }
+
+
+
     onChangeEmail(email) {
         this.setState({email});
         //const pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -181,13 +215,13 @@ export default class Employerdetails extends React.Component{
         <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
             <TouchableOpacity> 
                {/* <Image source={require('../../assets/cancel1.png')} style={styles.cancel} />*/}
-               <Text style={{fontSize: 16,paddingRight:20}}> X </Text>
+               <Text style={{fontSize: 18,paddingRight:20}}> X </Text>
             </TouchableOpacity>
-            <Text style={styles.title}>
+            <Text style={{fontSize:18, fontWeight:'bold'}}>
                 Employer details
             </Text>
             <TouchableOpacity>
-                <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:100}} />
+                <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:Dimensions.get('window').width/3}} />
             </TouchableOpacity>
             <TouchableOpacity>
                 <Image source={require('../../assets/threedot.png')} style={{height:10,width:20, paddingTop:20,marginLeft:20}} />
@@ -196,25 +230,35 @@ export default class Employerdetails extends React.Component{
         <View style={{height:40, backgroundColor:'rgba(65, 161, 127,0.1)', paddingTop:1,marginBottom:20}}>
         <View style={{flexDirection:'row',paddingLeft:20,paddingTop:10}}>
         <View>
-        <Image style={{height:20, width:20}}
+            <Image style={{height:20, width:20}}
                 source={require('../../assets/check_circle.png')}
             />
-        </View>
-        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
-        
-        </View>
-        <View>
-            {this.renderImage()}
-        </View>
-        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
-        
-        </View>
-        <View>
-        <Image style={{height:20, width:20}}
+            </View>
+            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+            
+            </View>
+            <View>
+            <Image style={{height:20, width:20}}
+                source={require('../../assets/check_circle.png')}
+            />
+            </View>
+            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+            
+            </View>
+            <View>
+            <Image style={{height:20, width:20}}
+                source={require('../../assets/check_circle.png')}
+            />
+            </View>
+            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+            
+            </View>
+            <View>
+            <Image style={{height:20, width:20}}
                 source={require('../../assets/circle.png')}
             />
-        </View>
-        </View>
+            </View>
+            </View>
         </View>
         
         <ScrollView>
@@ -348,6 +392,7 @@ export default class Employerdetails extends React.Component{
                             <View style={{ width:'35%', marginLeft:10, alignItems:'center'}}>
                             <TouchableOpacity style={{height:30,width:'100%',alignItems:'center',borderRadius:5,justifyContent:'center', backgroundColor:'rgba(42,145,52,0.1)',}}
                             onPress={() => {this.setModalVisible(!modalVisible);}}
+                            onPress={()=> this.setState({id_card:true})}
                             >
                             <Text style={{color:'#2A9134'}}>
                                 No
@@ -357,7 +402,7 @@ export default class Employerdetails extends React.Component{
                 <View style={{ width:'35%', marginLeft:10, alignItems:'center', backgroundColor:'rgba(204,12,12, 0.1)'}}>
                 <TouchableOpacity style={{height:30,borderRadius:5,justifyContent:'center', }}
                 onPress={() => {this.setModalVisible(!modalVisible)}}
-                onPress={()=> this.setState({noemail:false})}
+                onPress={()=> this.setState({noemail:false, id_card:false})}
                 >
                     <Text style={{color:'#cc0c0c'}}>
                         Yes
@@ -461,10 +506,11 @@ export default class Employerdetails extends React.Component{
             </View>
         </View>
         
-        <TouchableOpacity style={{marginRight:20,marginTop:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: '#2A9134',marginBottom:20}}
-           // disabled={this.state.ButtonStateHolder || !this.state.validPan}
-            //onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
-            onPress={() => this.props.navigation.navigate('enach')}
+        <TouchableOpacity style={{marginRight:20,marginTop:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? 'rgba(42,145,52,0.5)':'#2A9134',marginBottom:20}}
+            disabled={!this.state.address}
+            onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
+            onPress={() => {this.insertdata_into_db();}}
+           // onPress={() => this.props.navigation.navigate('enach')}
         >
             <Text style={{textAlign:'center',paddingTop:7}}>
                 Submit

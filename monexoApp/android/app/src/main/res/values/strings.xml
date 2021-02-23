@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">monexoApp</string>
+    <string name="docCaptureTitle">Aadhaar verification</string>
+    <string name="docCaptureDescription">Make sure your document is without any glare and is fully inside</string>
+    <string name="docCaptureSubText">Front Side</string>
+    <string name="faceCaptureTitle">Image verification </string>
+   <string name="faceCaptureFaceNotFound">Place your face within circle</string>
+   <string name="faceCaptureFaceFound"> Capture Now </string>
+   <string name="faceCaptureMoveAway"> Move away from the phone</string>
+   <string name="faceCaptureActivity">Processing</string>
 </resources>

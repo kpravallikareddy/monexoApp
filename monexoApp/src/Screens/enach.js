@@ -30,6 +30,23 @@ export default class Enach extends React.Component {
     }
 
 
+    //lotuspay api integration
+
+    fetchData = () => {
+        //console.log('test');
+        //console.log(text);
+        //fetch('https://api.lotuspay.com/v1/nach_banks?filter=variant_api')
+          fetch('https://api-test.lotuspay.com/v1/customers/sk_test_CU0040GZMJRN1Y')
+            .then((response) => response.json())
+            .then((responseJson) => {
+               console.log('response:', responseJson);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    };
+
+
     handleOnPress = () => this.setState({checked: false})
 
    
@@ -135,11 +152,12 @@ export default class Enach extends React.Component {
                 </TouchableOpacity>
                 </View>
                 </View>
-                <View style={{ width:'95%',borderRadius:5, alignItems:'center', marginTop:30, backgroundColor:'#2A9134'}}>
+                <View style={{ width:'95%',borderRadius:5, alignItems:'center', marginTop:30, backgroundColor: this.state.ButtonStateHolder ? 'rgba(42,145,52,0.5)':'#2A9134'}}>
                     <TouchableOpacity 
                     disabled={this.state.ButtonStateHolder}
                     onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
-                    onPress={() => this.props.navigation.navigate('vkyc')}
+                   // onPress={() => this.props.navigation.navigate('vkyc')}
+                   onPress ={() => this.fetchData()}
                     style={{height:30,width:'100%',alignItems:'center',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
                     >
                         <Text style={{color:'#ffffff'}}>Proceed to E-NACH</Text>

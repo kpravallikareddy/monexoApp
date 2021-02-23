@@ -4,6 +4,15 @@ import {View, Text,TouchableOpacity, Image, Dimensions, CheckBox} from 'react-na
 import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
 
+/*const SetuUPIDeepLink = require("@setu/upi-deep-links")
+let setu = new SetuUPIDeepLink({
+    schemeId: "YOUR SCHEME ID",
+    jwtSecret: "YOUR JWT SECRET",
+    setuProductInstanceId: "YOUR PRODUCT INSTANCE ID",
+    mode: "PRODUCTION | SANDBOX" // default SANDBOX
+});*/
+
+
 const { height, width } = Dimensions.get('window')
 export default class Feepayment extends React.Component {
     

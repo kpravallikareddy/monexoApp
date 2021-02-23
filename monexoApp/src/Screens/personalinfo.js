@@ -1,12 +1,19 @@
 import React, {Component} from 'react';
-import {View, Text,TextInput, Image, TouchableOpacity, TouchableHighlight, ScrollView, Dimensions, Alert} from 'react-native';
+import {View, Text,TextInput, CheckBox, Image, TouchableOpacity, TouchableHighlight, ScrollView, Dimensions, Alert} from 'react-native';
 import styles from '../Styles/personalinfostyles';
 import {HelperText} from 'react-native-paper';
 import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
 import DatePicker from 'react-native-datepicker';
-//import { ModalDatePicker } from "react-native-material-date-picker";
-//import { TextField } from 'react-native-materialui-textfield';
+import DateTimePicker from '@react-native-community/datetimepicker'
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import RadioButtonRN from 'radio-buttons-react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import notselected from '../../assets/notselected.png';
+import selected from '../../assets/selected.png';
+import DropDownPicker from "react-native-custom-dropdown";
+import moment from 'moment';
+
 
 const regex = /^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$/
 
@@ -24,13 +31,14 @@ export default class personalinfo extends React.Component{
         super(props)
         this.state={
             fullname:'',
-            dob:'',
-            date:'',
+         //   dob:(new Date()).toLocaleString(),
+            date:new Date(),
             fathername:'',
             pincode:'',
             locality:'',
             sublocality:'',
             selectedButton:'',
+            selectedGender:'',
             address:'',
             showCircleImg:true,
             state: ' ',
@@ -38,10 +46,19 @@ export default class personalinfo extends React.Component{
             ButtonStateHolder:true,
             pannumber:null,
             email:null,
+           // mode:'date',
             validPan: false,
             visible: false,
             errorStatus: false,
             validEmail:false,
+            checked:null,
+            profession:false,
+            data : ['Self-Employed','Student'],
+            salariedselected:null,
+            dropdownvisible:false,
+            isDatePickerVisible:false,
+            //gender:null,
+            salarieddata:['Pvt Ltd', 'LLP', 'Public Ltd','Central Govt', 'State Govt']
         };
         this.onSubmit = this.onSubmit.bind(this);
         this.fetchData = this.fetchData.bind(this);
@@ -68,9 +85,25 @@ export default class personalinfo extends React.Component{
         this.setState({checked:true})
     }
     
+    //onPress= () => {
+    //    this.setState({selectedButton:'Pvt Ltd'})
+    //}
+
     onPress= () => {
-        this.setState({selectedButton:'male'})
+        this.setState({selectedGender:'male'})
     }
+
+    onDateChange = (event, selectedDate) => {
+        console.log(selectedDate)
+        const currentDate = selectedDate || date;
+        this.setState({date: currentDate})
+      }
+
+      showDatePicker = () => {
+        this.setState({isDatePickerVisible:true});
+      }
+
+      
 
     onChanged(text){
         let newText = '';
@@ -117,6 +150,43 @@ export default class personalinfo extends React.Component{
        }
    }
 
+
+   insertdata_into_db = async () => {
+    console.log('test');
+   await fetch('http://10.0.2.2:8000/personalinformation/',
+  {
+    method:'POST',
+    headers:{
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body:
+      JSON.stringify(
+          {
+        appid: '12345',
+        fullname:this.state.fullname,
+        dob:this.state.date,
+        father:this.state.fathername,
+        gender:this.state.selectedGender,
+        personal_email_id:this.state.email,
+        pincode:this.state.pincode,
+        city:this.state.city,
+        state:this.state.state,
+        locality:this.state.locality,
+        sublocality:this.state.sublocality,
+        address:this.state.address,
+        profession_type:this.state.salariedselected,
+        pannumber:this.state.pannumber,
+      }
+      )
+  }).then((response) =>response.json())
+    .then((responseJson) =>{
+    console.log(responseJson)
+    }).catch((error) =>
+    {
+      console.error(error);
+    });
+}
     
     fetchData = (text) => {
         //console.log('test');
@@ -147,13 +217,13 @@ export default class personalinfo extends React.Component{
         <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
             <TouchableOpacity> 
                {/* <Image source={require('../../assets/cancel1.png')} style={styles.cancel} />*/}
-               <Text style={{fontSize: 16,paddingRight:20}}> X </Text>
+               <Text style={{fontSize: 18,paddingRight:20}}> X </Text>
             </TouchableOpacity>
-            <Text style={styles.title}>
+            <Text style={{fontSize:18, fontWeight:'bold'}}>
                 Personal information 
             </Text>
             <TouchableOpacity>
-                <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:100}} />
+                <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:Dimensions.get('window').width/3-30}} />
             </TouchableOpacity>
             <TouchableOpacity>
                 <Image source={require('../../assets/threedot.png')} style={{height:10,width:20, paddingTop:20,marginLeft:20}} />
@@ -166,13 +236,21 @@ export default class personalinfo extends React.Component{
                 source={require('../../assets/check_circle.png')}
             />
         </View>
-        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
         
         </View>
         <View>
             {this.renderImage()}
         </View>
-        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+        
+        </View>
+        <View>
+        <Image style={{height:20, width:20}}
+                source={require('../../assets/circle.png')}
+            />
+        </View>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
         
         </View>
         <View>
@@ -205,18 +283,36 @@ export default class personalinfo extends React.Component{
             />
             </View>
     </View>*/}
+
+
+
+
+    {/*<DateTimePicker 
+    style={{width: 160,
+        marginTop: 20,marginBottom: 20,backgroundColor:'#EEEEEE', marginLeft:20, borderBottomWidth:0.5,borderBottomColor:'#000000'}}
+    testID="dateTimePicker"
+    value={date}
+    mode={'date'}
+    is24Hour={false}
+    display="default"
+    onChange={this.onDateChange}
+    />*/}
+
+    
         
         <DatePicker
-          style={{width: 160,
+          style={{width: 160, 
             marginTop: 20,marginBottom: 20,backgroundColor:'#EEEEEE', marginLeft:20, borderBottomWidth:0.5,borderBottomColor:'#000000'}}
           date={date} // Initial date from state
-          mode="date" // The enum of date, datetime and time
-          placeholder="Date of Birth"
+          mode={"date"} // The enum of date, datetime and time
+         //value={date}
+        // mode={'date'}
+        // placeholder="Date of Birth"
           format="DD-MM-YYYY"
-          minDate="01-01-2016"
-          maxDate="01-31-2100"
-          confirmBtnText="Confirm"
-          cancelBtnText="Cancel"
+        //  minDate="01-01-2016"
+        //  maxDate="01-31-2100"
+         // confirmBtnText="Confirm"
+         // cancelBtnText="Cancel"
           customStyles={{
             dateIcon: {
               //display: 'none',
@@ -266,7 +362,7 @@ export default class personalinfo extends React.Component{
             Gender
         </Text>
         <View style={{flexDirection:'row', marginBottom:20}}>
-        <TouchableOpacity onPress={() => this.setState({ selectedButton:'male'})} style={{marginRight:20,borderWidth:1,marginLeft:20,height:30,borderRadius:5,backgroundColor:this.state.selectedButton === 'male' ? '#2A9134':'#D1D1D1',opacity:0.5,width:'25%'}}>
+        <TouchableOpacity onPress={() => this.setState({ selectedGender:'male'})} style={{marginRight:20,borderWidth:1,marginLeft:20,height:30,borderRadius:5,backgroundColor:this.state.selectedGender === 'male' ? '#2A9134':'#D1D1D1',opacity:0.5,width:'25%'}}>
             <View style={{flexDirection:'row',padding:5,justifyContent:'center'}}>
             <Image source={require('../../assets/maleiconselected.png')} resizeMode='contain' style={{height:15,width:15,flex:.3}} />
             <Text style={{flex:.7}}>
@@ -274,7 +370,7 @@ export default class personalinfo extends React.Component{
             </Text>
             </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => this.setState({ selectedButton:'female'})} style={{marginRight:20,borderWidth:1,marginLeft:20,height:30,borderRadius:5,backgroundColor:this.state.selectedButton === 'female' ? '#2A9134':'#D1D1D1',opacity:0.5,width:'30%'}}>
+        <TouchableOpacity onPress={() => this.setState({ selectedGender:'female'})} style={{marginRight:20,borderWidth:1,marginLeft:20,height:30,borderRadius:5,backgroundColor:this.state.selectedGender === 'female' ? '#2A9134':'#D1D1D1',opacity:0.5,width:'30%'}}>
             <View style={{flexDirection:'row', padding:5,alignItems:'center',justifyContent:'center'}}>
             <Image source={require('../../assets/womaniconselected.png')} style={{height:15,width:15}} />
             <Text>
@@ -366,8 +462,99 @@ export default class personalinfo extends React.Component{
             </View>
             
         </View>
-        <View style={{marginLeft:20,marginTop:15}}>
-            <Text >Profession</Text>
+        <View style={{marginLeft:20,marginTop:15, marginRight:20, borderColor:'#2A9154'}}>
+            <Text >Profession</Text> 
+                {this.state.profession == false ?
+
+                <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+                <TouchableOpacity 
+                onPress={() =>{this.setState({profession:true})}}
+                style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
+                    <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
+                    <Text style={{marginLeft:10, }}>Salaried</Text>
+                    <Image style={{marginLeft:190, height:30, width:30}}source={require("../../assets/downarrow.png")}/>
+                </TouchableOpacity>
+                </View> :
+            <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+            <TouchableOpacity onPress={() =>{this.setState({dropdownvisible:true})}}
+            style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
+                    <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
+                    <Text style={{marginLeft:10,marginTop:15}}>Salaried</Text>
+                    <Image style={{marginLeft:190, height:30, width:30, marginTop:15}}source={require("../../assets/downarrow.png")}/>
+            </TouchableOpacity>
+            </View>}
+            {this.state.dropdownvisible == true ?
+            this.state.salarieddata.map((salarieddata, key) => {
+        return (
+            <View key={key} style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+            {this.state.salariedselected == key ?
+            <View >
+                <TouchableOpacity style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
+                    <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
+                    <Text style={{marginLeft:10,marginTop:15}}>{salarieddata}</Text>
+                    
+                </TouchableOpacity>
+                </View>
+                :
+                <View>
+                <TouchableOpacity onPress={()=>{this.setState({salariedselected: key,ButtonStateHolder : false, visible:true})}} 
+                //onPress={() => alert('This product coming soon...')}
+                style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
+                    <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
+                    <Text style={{marginLeft:10, }}>{salarieddata}</Text>
+                    {/*<Image style={{marginLeft:190, height:30, width:30}}source={require("../../assets/downarrow.png")}/>*/}
+                </TouchableOpacity>
+                </View>
+            }
+            </View>
+        )
+        }) :null}
+
+        {this.state.data.map((data, key) => {
+        return (
+            <View key={key} style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+            {this.state.checked == key ?
+            <View >
+                <TouchableOpacity style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
+                    <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
+                    <Text style={{marginLeft:10,marginTop:15}}>{data}</Text>
+                    
+                </TouchableOpacity>
+                </View>
+                :
+                <View>
+                <TouchableOpacity onPress={()=>{this.setState({checked: key})}} 
+                onPress={() => alert('This product coming soon...')}
+                style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
+                    <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
+                    <Text style={{marginLeft:10, }}>{data}</Text>
+                    {/*<Image style={{marginLeft:190, height:30, width:30}}source={require("../../assets/downarrow.png")}/>*/}
+                </TouchableOpacity>
+                </View>
+            }
+            </View>
+        )
+        })}
+
+
+      {/*  <DropDownPicker 
+            items={[
+            {label:'Pvt Ltd', value:'pvt ltd'},
+            {label:'LLP', value:'llp'},
+            {label:'Public Ltd', value:'public ltd'}, 
+            {label:'Central Govt', value:'central govt'},
+            {label:'State Govt', value:'state govt'} 
+            ]}
+            defaultValue={this.state.profession}
+            containerStyle={{height:48}}
+            style={{backgroundColor:'#EEEEEE'}}
+            itemStyle={{justifyContent:'flex-start'}}
+            //dropDownStyle={{backgroundColor:'#fafafa'}}
+            onChangeItem={item => this.setState({profession:item.value})}
+        />*/}
+
+
+        {/*
             <View style={{flexDirection:'row', marginTop:10}}>
                 <View style={{paddingRight:10, width:'50%'}}>
         <TouchableOpacity style={{borderWidth:1,height:35,borderRadius:5,backgroundColor:this.state.selectedButton === 'salaried-pvt ltd' ? '#2A9134':'#D1D1D1',opacity:0.5,marginBottom:20}}
@@ -473,10 +660,10 @@ export default class personalinfo extends React.Component{
             </Text>
             </View>
         </TouchableOpacity>
-        </View>
+        </View>*/}
         </View>
         {this.state.visible == true ?
-        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:0,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
+        <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:15,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/pan.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Pan number</HelperText>
@@ -494,10 +681,11 @@ export default class personalinfo extends React.Component{
     <Text></Text>
         }
 
-        <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? '#2A9134':'#2A9134', opacity:0.5,marginBottom:20,}}
+        <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder || !this.state.validPan ? 'rgba(42,145,52,0.3)':'#2A9134',marginBottom:20,}}
             disabled={this.state.ButtonStateHolder || !this.state.validPan}
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
-            onPress={() => this.props.navigation.navigate('bankdetails')}
+            //onPress={() => this.props.navigation.navigate('bankdetails')}
+            onPress={() => {this.insertdata_into_db();}}
         >
             <Text style={{textAlign:'center',paddingTop:7}}>
                 Submit

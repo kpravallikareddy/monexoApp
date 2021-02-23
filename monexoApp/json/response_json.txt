@@ -1,0 +1,122 @@
+{
+    "ResponseCode": 200,
+    "ResponseStatus": "true",
+    "ResponseMessage": "success",
+    "account_application_info": {
+        "totalSize": 2,
+        "done": true,
+        "records": [
+            {
+                "attributes": {
+                    "type": "genesis__Applications__c",
+                    "url": "/services/data/v41.0/sobjects/genesis__Applications__c/a5g1e00000017lAAAQ"
+                },
+                "Id": "a5g1e00000017lAAAQ",
+                "Name": "APP-0000231405",
+                "genesis__Account__c": "0011e000008B8X8AAK",
+                "IP_address__c": null,
+                "Application_incomplete_date_time__c": null,
+                "Application_T_C_date_and_time__c": null,
+                "Terms_Conditions__c": false,
+                "Approval_date__c": null,
+                "Rejection_date__c": null,
+                "genesis__Product_Type__c": "LOAN",
+                "genesis__Status__c": "NEW - ENTERED",
+                "Sub_Status__c": null,
+                "genesis__Loan_Amount__c": null,
+                "genesis__Term__c": null,
+                "genesis__Interest_Rate__c": null,
+                "RecordTypeId": "01228000000momrAAA",
+                "Reject_code__c": null,
+                "Express_Quote_Loan_amount__c": 0,
+                "Express_Quote_Tenor__c": 0,
+                "genesis__Account__r": {
+                    "attributes": {
+                        "type": "Account",
+                        "url": "/services/data/v41.0/sobjects/Account/0011e000008B8X8AAK"
+                    },
+                    "Subvention_Loan__c": false,
+                    "Email_OTP_Verified__c": false,
+                    "peer__First_Name__c": "kww",
+                    "Middle_Name__c": null,
+                    "peer__Last_Name__c": "Kumar",
+                    "Customer_ID__c": "CID-000243659",
+                    "Mobile_OTP_verified__c": false,
+                    "Mobile_Number__c": "9876543456",
+                    "Partner__r": null,
+                    "Partner__c": null,
+                    "peer__Email__c": "prabhujce12@gmail.com",
+                    "Partner_Lender_Email_Sent__c": false
+                }
+            },
+            {
+                "attributes": {
+                    "type": "genesis__Applications__c",
+                    "url": "/services/data/v41.0/sobjects/genesis__Applications__c/a5g1e00000017kmAAA"
+                },
+                "Id": "a5g1e00000017kmAAA",
+                "Name": "APP-0000231403",
+                "genesis__Account__c": "0011e000008B8X8AAK",
+                "IP_address__c": null,
+                "Application_incomplete_date_time__c": null,
+                "Application_T_C_date_and_time__c": null,
+                "Terms_Conditions__c": false,
+                "Approval_date__c": null,
+                "Rejection_date__c": null,
+                "genesis__Product_Type__c": "LOAN",
+                "genesis__Status__c": "NEW - ENTERED",
+                "Sub_Status__c": null,
+                "genesis__Loan_Amount__c": null,
+                "genesis__Term__c": null,
+                "genesis__Interest_Rate__c": null,
+                "RecordTypeId": "01228000000momrAAA",
+                "Reject_code__c": null,
+                "Express_Quote_Loan_amount__c": 0,
+                "Express_Quote_Tenor__c": 0,
+                "genesis__Account__r": {
+                    "attributes": {
+                        "type": "Account",
+                        "url": "/services/data/v41.0/sobjects/Account/0011e000008B8X8AAK"
+                    },
+                    "Subvention_Loan__c": false,
+                    "Email_OTP_Verified__c": false,
+                    "peer__First_Name__c": "kww",
+                    "Middle_Name__c": null,
+                    "peer__Last_Name__c": "Kumar",
+                    "Customer_ID__c": "CID-000243659",
+                    "Mobile_OTP_verified__c": false,
+                    "Mobile_Number__c": "9876543456",
+                    "Partner__r": null,
+                    "Partner__c": null,
+                    "peer__Email__c": "prabhujce12@gmail.com",
+                    "Partner_Lender_Email_Sent__c": false
+                }
+            }
+        ]
+    },
+    "customer_address_info": {
+        "totalSize": 1,
+        "done": true,
+        "records": [
+            {
+                "attributes": {
+                    "type": "loan__Address__c",
+                    "url": "/services/data/v41.0/sobjects/loan__Address__c/a081e000000qbjlAAA"
+                },
+                "Id": "a081e000000qbjlAAA",
+                "Name": "AID-0000285302",
+                "Customer__c": "0011e000008B8X8AAK",
+                "Room_Flat__c": "test",
+                "Floor__c": "tst",
+                "Block__c": null,
+                "Building_name__c": "test",
+                "Door_No_Street_name__c": "test",
+                "PinCode__c": "607106",
+                "loan__City__c": "Cuddalore",
+                "loan__State__c": "TAMIL NADU",
+                "Company_Website__c": null,
+                "loan__Phone1__c": "9715058849"
+            }
+        ]
+    }
+}

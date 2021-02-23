@@ -16,6 +16,7 @@ import vkyc from './Screens/vkyc'
 import withdrawal from './Screens/withdrawal'
 import feepayment from './Screens/feepayment'
 import cameraexample from './Screens/cameraexample'
+import ocrmon from './Screens/ocrmon'
 
 export const AppNavigator = createStackNavigator(
     {
@@ -104,9 +105,15 @@ export const AppNavigator = createStackNavigator(
           headerShown:false
         }),
       },
+      ocrmon:{
+        screen:ocrmon,
+        navigationOptions: ({navigation}) => ({
+          headerShown:false
+        }),
+      },
     },
     {
-        initialRouteName:'ocr',
+        initialRouteName:'personalinfo',
     },
 );
 const AppContainer = createAppContainer(AppNavigator);
