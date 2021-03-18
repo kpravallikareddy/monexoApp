@@ -18,6 +18,9 @@ target 'monexoApp' do
 
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
 
+
+  pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
+
   target 'monexoAppTests' do
     inherit! :complete
     # Pods for testing

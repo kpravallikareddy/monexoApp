@@ -22,12 +22,114 @@ export default class Preoffer extends React.Component {
             showCircleImg:true,
             termsAccepted: false,
             checked: false,
-            sliderValue:maximumValue/2,
+           // sliderValue:maximumValue/2,
+            default: maximumValue/2,
             value:0.2,
+            appid:'',
+            customerid:'',
+            cl_amount:0,
+            minimum:0,
+            maximum:0,
+            finalvalue:0,
+            interest_rate:0,
+            terms_accepted:false,
+            selected_cl:0,
+            plan:'Freedom',
             
         }
         //this.onSubmit = this.onSubmit.bind(this);
     }
+
+    insertdata_into_db = async () => {
+        console.log('test');
+       await fetch('http://10.0.2.2:8000/offer_details_cl/',
+      {
+        method:'POST',
+        headers:{
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body:
+          JSON.stringify(
+              {
+            appid: '12345',
+            customerid:this.state.customerid,
+            cl_amount:this.state.pl_amount,
+            minimum:this.state.minimum,
+            maximum:this.state.maximum,
+            finalvalue:this.state.selected_cl,
+            interest_rate:this.state.interest_rate,
+            terms_accepted:this.state.terms_accepted,
+          }
+          )
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    }
+
+    insert_cust_selectdata_into_db = async () => {
+        console.log('test');
+       await fetch('http://10.0.2.2:8000/offer_details_cl_cust_selects/',
+      {
+        method:'POST',
+        headers:{
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body:
+          JSON.stringify(
+              {
+            appid: '12345',
+            customerid:this.state.customerid,
+            selected_cl:this.state.selected_cl,
+          }
+          )
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    }
+
+    // dynamic plan value getting from api
+    renderSwitch(plan) {
+        switch(this.state.plan) {
+            case 'Freedom':
+                return (
+                    <View style={{width:70,height:16,backgroundColor:'#C7E4FF', alignItems:'center',justifyContent:'center',borderRadius:5,borderWidth:0.1 }}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#001931'}}>Freedom</Text>
+                    </View>)
+            case 'Smart':
+                return (
+                    <View style={{width:50,height:16,backgroundColor:'#FFD4C7', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0.1}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#320C00'}}>Smart</Text>
+                    </View>)
+            case 'Grand':
+                return (
+                    <View style={{width:50,height:16,backgroundColor:'#E8E266', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0.1}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#323000'}}>Grand</Text>
+                    </View>)
+            case 'Elite':
+                return (
+                    <View style={{width:40,height:16,backgroundColor:'#00B488', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0.1}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#E8FFF9'}}>Elite</Text>
+                    </View>)
+            case 'Diamond':
+                return (
+                    <View style={{width:65,height:16,backgroundColor:'#262626', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0.1}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#E2E2E2'}}>Diamond</Text>
+                    </View>)
+        }
+    }
+
+
+
 
     componentDidMount() { 
         this.anim.play();
@@ -54,15 +156,15 @@ export default class Preoffer extends React.Component {
         return (
             <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
             <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
-                <TouchableOpacity> 
-                   {/* <Image source={require('../../assets/cancel1.png')} style={styles.cancel} />*/}
+               {/* <TouchableOpacity> 
+                   
                    <Text style={{fontSize: 16,paddingRight:20}}> X </Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>
                     Preliminary offer
-                </Text>
+                </Text>*/}
                 <TouchableOpacity>
-                    <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:100}} />
+                    <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:Dimensions.get('window').width-100}} />
                 </TouchableOpacity>
                 <TouchableOpacity>
                     <Image source={require('../../assets/threedot.png')} style={{height:10,width:20, paddingTop:20,marginLeft:20}} />
@@ -71,24 +173,34 @@ export default class Preoffer extends React.Component {
             <View style={{height:40, backgroundColor:'#D1D1D1', paddingTop:1,marginBottom:20}}>
             <View style={{flexDirection:'row',paddingLeft:20,paddingTop:10}}>
             <View>
-            <Image style={{height:20, width:20}}
+        <Image style={{height:20, width:20}}
                 source={require('../../assets/check_circle.png')}
             />
-            </View>
-            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
-            
-            </View>
-            <View>
-            <Image style={{height:20, width:20}}
+        </View>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+        
+        </View>
+        <View>
+        <Image style={{height:20, width:20}}
                 source={require('../../assets/check_circle.png')}
             />
-            </View>
-            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
-            
-            </View>
-            <View>
-            {this.renderImage()}
-            </View>
+        </View>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+        
+        </View>
+        <View>
+        <Image style={{height:20, width:20}}
+                source={require('../../assets/check_circle.png')}
+            />
+        </View>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+        
+        </View>
+        <View>
+        <Image style={{height:20, width:20}}
+                source={require('../../assets/check_circle.png')}
+            />
+        </View>
             </View>
             </View>
             
@@ -126,16 +238,22 @@ export default class Preoffer extends React.Component {
                 ref={animation => { this.anim = animation; }} 
                 />
             </View>*/}
-            <View style={{marginTop:20, alignItems:'center', borderBottomWidth:0.5, borderBottomColor:'#D1D1D1', margin:30,paddingBottom:20}}> 
-                <Text style={{paddingBottom:5, fontFamily:'Nunito',fontWeight:'bold'}}>
-                You are pre-qualified 
+            <View style={{marginTop:20, alignItems:'center', borderBottomWidth:0.8, borderColor:'#D1D1D1', margin:30,paddingBottom:20,borderTopWidth:0.8, }}> 
+               <View style={{flexDirection:'row'}}>
+                <Text style={{fontFamily:'Nunito',fontWeight:'bold',marginTop:20}}>
+                You are pre-qualified for{' '} 
                 </Text>
-                <Text style={{fontFamily:'Nunito',fontWeight:'bold'}}>
-                for Credit line upto {'\u20B9'}50,000
+                <View style={{marginTop:23}}>
+                <Text>{this.renderSwitch()}</Text>
+                </View>
+                </View>
+                <Text style={{fontFamily:'Nunito',fontWeight:'bold',paddingTop:5}}>
+                plan with a Credit line upto {'\u20B9'}50,000
                 </Text>
+                
             </View>
             <View style={{alignItems:'center', marginTop:-8}}>
-                <Text>
+                <Text style={{fontFamily:'Nunito', fontWeight:'bold'}}>
                     You will pay for what you use nothing extra.
                 </Text>
             </View>
@@ -170,7 +288,7 @@ export default class Preoffer extends React.Component {
             onValueChange={value => this.setState({ value })}
             />*/}
 
-           {/*} <Slider
+           {/* <Slider
             style={{width: 350, height: 40, marginLeft:10}}
             minimumValue={1000}
             maximumValue={50000}
@@ -184,15 +302,15 @@ export default class Preoffer extends React.Component {
             thumbTintColor='#61C261'
             thumbImage={require('../../assets/Slider.png')}
             
-        />*/}
+            />*/}
 
             <SliderText 
             maximumValue={50000} 
             stepValue={1000} 
             minimumValueLabel="1000" 
             maximumValueLabel="50000" 
-            onValueChange={(sliderValue) => this.setState({sliderValue})}
-            sliderValue={this.state.sliderValue} 
+            sliderValue={this.state.default}
+            onValueChange={(val) => this.setState({selected_cl:val}),console.log('finalvalue:',this.state.selected_cl)} 
             minimumTrackTintColor="#006202"
             maximumTrackTintColor="#61C261"
             thumbTintColor='#61C261'

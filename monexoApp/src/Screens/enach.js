@@ -28,15 +28,13 @@ export default class Enach extends React.Component {
             />
         );
     }
-
-
+    
     //lotuspay api integration
 
     fetchData = () => {
-        //console.log('test');
-        //console.log(text);
+        console.log('test');
         //fetch('https://api.lotuspay.com/v1/nach_banks?filter=variant_api')
-          fetch('https://api-test.lotuspay.com/v1/customers/sk_test_CU0040GZMJRN1Y')
+          fetch('https://api-test.lotuspay.com/v1/sources/')
             .then((response) => response.json())
             .then((responseJson) => {
                console.log('response:', responseJson);
@@ -46,6 +44,37 @@ export default class Enach extends React.Component {
             });
     };
 
+    fetchSource = () => {
+         console.log('source');
+
+         fetch('https://api-test.lotuspay.com/v1/sources/', //+sk_test_GzAdSyss7OZ9dbhvZibmP5TA,
+       {
+         method:'POST',
+         headers:{
+            'Authorization': 'Bearer sk_test_GzAdSyss7OZ9dbhvZibmP5TA',
+            'Content-Type': 'application/json',
+          },
+         body:JSON.stringify({"type":"nach_debit",
+                                "nach_debit":{"amount_maximum":10000,
+                                //"date_first_collection":"2020-01-01",
+                                "debtor_agent_code":"ICIC",
+                                "debtor_account_name":"AMIT JAIN",
+                                "debtor_account_number":"326949",
+                                "debtor_account_type":"savings",
+                                "frequency":"MNTH"},
+                                //"redirect":{"return_url":"https://www.lotuspay.com/"},
+                                "reference1":"CU0011AABBCC22"}
+                        ),
+       }).then((response) =>response)
+         .then((responseJson) =>{
+         console.log('response:',responseJson)
+         
+         }).catch((error) =>
+         {
+           console.error(error);
+         });
+       }
+     
 
     handleOnPress = () => this.setState({checked: false})
 
@@ -67,12 +96,12 @@ export default class Enach extends React.Component {
             <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
                 <TouchableOpacity> 
                    
-                   <Text style={{fontSize: 16,paddingRight:20}}> X </Text>
+                   <Text style={{fontSize: 18,paddingRight:20}}> X </Text>
                 </TouchableOpacity>
                 <Text style={{marginTop:0, fontWeight:'bold'}}>
                 E-NACH
                 </Text>
-                <TouchableOpacity style={{paddingLeft:80}}>
+                <TouchableOpacity style={{paddingLeft:Dimensions.get('window').width/3-30}}>
                     <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:100}} />
                 </TouchableOpacity>
                 <TouchableOpacity>
@@ -89,7 +118,7 @@ export default class Enach extends React.Component {
             {this.renderImage()}
         </View>
         </View>
-        <View style={{height:1,borderWidth:0.5,borderColor:'#2A9134',width:160,marginTop:10}}>
+        <View style={{height:1,borderWidth:0.5,borderColor:'#2A9134',width:Dimensions.get('window').width/2,marginTop:10}}>
         
         </View>
         <View>
@@ -157,7 +186,7 @@ export default class Enach extends React.Component {
                     disabled={this.state.ButtonStateHolder}
                     onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
                    // onPress={() => this.props.navigation.navigate('vkyc')}
-                   onPress ={() => this.fetchData()}
+                   onPress ={() => this.fetchSource()}
                     style={{height:30,width:'100%',alignItems:'center',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
                     >
                         <Text style={{color:'#ffffff'}}>Proceed to E-NACH</Text>

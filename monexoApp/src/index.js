@@ -17,6 +17,8 @@ import withdrawal from './Screens/withdrawal'
 import feepayment from './Screens/feepayment'
 import cameraexample from './Screens/cameraexample'
 import ocrmon from './Screens/ocrmon'
+import home from './Screens/home'
+//import './Screens/intro';
 
 export const AppNavigator = createStackNavigator(
     {
@@ -111,9 +113,15 @@ export const AppNavigator = createStackNavigator(
           headerShown:false
         }),
       },
+      home:{
+        screen:home,
+        navigationOptions: ({navigation}) => ({
+          headerShown:false
+        }),
+      },
     },
     {
-        initialRouteName:'personalinfo',
+        initialRouteName:'home',
     },
 );
 const AppContainer = createAppContainer(AppNavigator);

@@ -166,6 +166,7 @@ public class RNHVFaceCapture extends ReactContextBaseJavaModule {
 
                             }
                             resultsObj.putString("response", result.toString());
+                            System.out.println(resultsObj);  
                         }
                         if (headers != null) {
                             headersObj = null;

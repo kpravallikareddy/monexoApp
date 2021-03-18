@@ -20,6 +20,9 @@ export default class Vkyc extends React.Component {
         //this.onSubmit = this.onSubmit.bind(this);
     }
 
+    //hyperverge link: https://hyperverge.co/docs/customer-link-api/
+
+
     renderImage =() => {
         var imgSource = this.state.showCircleImg?circle:check_circle; 
         return(
@@ -97,7 +100,7 @@ export default class Vkyc extends React.Component {
                     <TouchableOpacity 
                     //disabled={this.state.ButtonStateHolder}
                     onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
-                    onPress={() => this.props.navigation.navigate('withdrawal')}
+                  //  onPress={() => this.props.navigation.navigate('withdrawal')}
                     style={{height:30,width:'100%',alignItems:'center',borderColor:'#2A9134',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
                     >
                         <Text style={{color:'#2A9134'}}>Proceed to Video KYC</Text>

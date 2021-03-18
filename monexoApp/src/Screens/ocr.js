@@ -7,8 +7,9 @@ import click from '../../assets/click.png';
 import notclick from '../../assets/notclick.png';
 //import {RNCamera}  from 'react-native-camera';
 import React, { Component } from 'react';
-import { PermissionsAndroid, Image,Alert, TouchableOpacity,TouchableHighlight, Modal,Platform,AppRegistry, View, Text, StyleSheet,Picker, TextInput, Button, NativeModules, Dimensions } from 'react-native';
+import { PermissionsAndroid, Image,Alert, TouchableOpacity,TouchableHighlight, Modal,Platform,AppRegistry, View, Text, StyleSheet,TextInput, Button, NativeModules, Dimensions } from 'react-native';
 import moment from 'moment'; 
+import {Picker} from '@react-native-community/picker';
 //import {RNS3} from 'react-native-aws3';
 
 /*
@@ -17,11 +18,12 @@ Wrappers for HyperSnapSDK have been written and bridged to be accessed in React 
 
 const {RNHyperSnapSDK, RNHVDocsCapture, RNHVQRScanCapture, RNHVFaceCapture,   RNHyperSnapParams, RNHVNetworkHelper} = NativeModules;
 
-import { YellowBox } from 'react-native';
+//import { YellowBox } from 'react-native';
 /*
 The bellow line is used to ignore certain warnings
 */
-YellowBox.ignoreWarnings(['Module RCTImageLoader','Class RCTCxxModule']);
+//YellowBox.ignoreWarnings(['Module RCTImageLoader','Class RCTCxxModule']);
+//LogBox.ignoreAllLogs(['Module RCTImageLoader','Class RCTCxxModule']);
 
 //Please add the appId and appKey received from HyperVerge here.
 const appID = "244af5";
@@ -52,7 +54,8 @@ export default class Ocr extends React.Component {
           qrOutput: "",
           scanaadharenable:true,
           ocrcompleted:false,
-          customerid:345,
+          appid:'12345',
+          customerid:'345',
           name:'',
           aadhaar_number:'',
           father:'',
@@ -69,11 +72,26 @@ export default class Ocr extends React.Component {
           match:'',
           match_score:0,
           to_be_reviewed:'',
+          liveness_score:0,
+          liveness:'',
           ocr_completed:'',
          // adhaar_front:'',
-          adhaar_back:'',
-          face_capture:'',
-        }
+        //  adhaar_back:'',
+          facecapture_match:'',
+          adhaarfront_response:'',
+          adhaarback_response:'',
+          facecapture_response:'',
+          filepath:{
+            data:'',
+            uri:''
+          },
+          fileData:'',
+          fileUri:'',
+          imagename:'',
+          type:'',
+          singleFileOBJ:'',
+          photo:null,
+          }
         //this.onSubmit = this.onSubmit.bind(this);
         if(Platform.OS==="android"){
             requestCameraPermission();
@@ -102,7 +120,8 @@ export default class Ocr extends React.Component {
         },
         body:
           {
-            appid: this.state.customerid,
+            appid: this.state.appid,
+           // customerid:this.state.customerid,
             name:this.state.name,
             aadhaar:this.state.aadhaar_number,
             father:this.state.father,
@@ -112,6 +131,8 @@ export default class Ocr extends React.Component {
             phone:this.state.phone,
             gender:this.state.gender,
             qr:this.state.qr,
+            adhaarfront_response:this.state.adhaarfront_response,
+            adhaarback_response:this.state.adhaarback_response
           }
       }).then((response) =>response.json())
         .then((responseJson) =>{
@@ -122,6 +143,74 @@ export default class Ocr extends React.Component {
         });
     };
 
+
+    insert_facecapturedata_into_MySQL = () => {
+      fetch('http://127.0.0.1:8000/api/ocr/',
+      {
+        method:'POST',
+        headers:{
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          //'Connection':'close',
+         // 'type':'getUserData',
+        },
+        body:
+          {
+            appid: this.state.appid,
+           // customerid:this.state.customerid,
+            base:'adhaar',
+            compare_with:'selfie',
+            conf:this.state.conf,
+            match:this.state.match,
+            match_score:this.state.match_score,
+            liveness:this.state.liveness,
+            liveness_score:this.state.liveness_score,
+            to_be_reviewed:this.state.to_be_reviewed,
+            jsontext:this.state.facecapture_response,
+            facecapture_match:this.state.facecapture_match
+          }
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    };
+
+    createFormData = (photo, body) => {
+      const data = new FormData();
+      data.append(photo.fileName.replace('.', ''), {
+        name:photo.fileName,
+        type:photo.type, 
+        uri:Platform.OS === 'android'? this.state.fileUri : this.state.fileUri.replace('file://','')
+      });
+      Object.keys(body).forEach((key) => {
+        data.append(key,body[key]);
+      });
+      return data;
+    };
+    
+    handleUploadPhoto = () => {
+      //console.log(this.state.photo.fileName);
+      fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
+      {
+        method:'POST',
+        headers:{  
+          "Content-Type": "multipart/form-data",
+          }, 
+        body: this.createFormData(this.state.photo,
+          {application_id:this.state.appid,
+          document_name:this.state.photo.fileName.replace('.', '')}),
+      })
+      .then((response) => response.json())
+      .then((response) => {
+        console.log('response',response)
+      })
+      .catch((error) => {
+        console.log('error:',error)
+      });
+    };
      getFilename(str) {
       return str.split('\\').pop().split('/').pop();
     }
@@ -180,7 +269,6 @@ export default class Ocr extends React.Component {
           RNHVDocsCapture.setDocCaptureDescription(this.state.bottomText);
         }
   
-  
         var closure = (error,result) => {
           //this.hvFace();
             if(error != null){
@@ -197,47 +285,13 @@ export default class Ocr extends React.Component {
                 });
               this.printDictionary(result,"doc",true); //passing error to printDictonary to print the result
               docImageUri = result["imageUri"]
-             // console.log("image:",result.);
+              console.log("image:",result);
              //console.log("name:",filename.test(docImageUri));
                 let filename = this.getFilename(docImageUri)
                 console.log("filename:",filename);
                let adhaar_front = result["imageUri"]
                 console.log("adhaar_front",adhaar_front);
-
-                // uploading to S3
-               // const file = {
-                  // `uri` can also be a file system path (i.e. file://)
-                 // app_id:12345,
-                //  uri: docImageUri,
-                //  name: filename,
-                //  type: "image/png"
-                //}
-                 
-               /* const options = {
-                  keyPrefix: "monexo/",
-                  bucket: "monexo",
-                  region: "ap-south-1",
-                  accessKey: "AKIAWA6EUU6NDMPFFHOB",
-                  secretKey: "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",
-                  successActionStatus: 201
-                }
-                 
-                RNS3.put(file, options).then(response => {
-                  if (response.status !== 201)
-                    throw new Error("Failed to upload image to S3");
-                  console.log(response.body);
-                  /**
-                   * {
-                   *   postResponse: {
-                   *     bucket: "your-bucket",
-                   *     etag : "9f620878e06d28774406017480a59fd4",
-                   *     key: "uploads/image.png",
-                   *     location: "https://your-bucket.s3.amazonaws.com/uploads%2Fimage.png"
-                   *   }
-                   * }
-                   
-                });*/
-
+                
 
             //Uncomment next block to test OCR:
   
@@ -414,8 +468,19 @@ export default class Ocr extends React.Component {
             else{
               this.printDictionary(result,"face",true); //passing error to printDictonary to print the result
               imageUri = result["imageUri"]
-              //console.log("selfie:",imageUri);
-  
+              //console.log("selfie:",result);
+              liveres = result["result"];
+            //  const liveresponse = JSON.stringify(liveres)
+             // console.log("liveres:",JSON.stringify(liveres));
+              console.log("review:",liveres["to-be-reviewed"]);
+              console.log("live:",liveres["liveness-score"]);
+              this.setState({
+                facecapture_response:result, 
+                liveness:liveres.live,
+                liveness_score:liveres["liveness-score"],
+                to_be_reviewed:liveres["to-be-reviewed"]
+              })
+    
               try{
                 var params = {};
                 var headers = {};
@@ -425,23 +490,19 @@ export default class Ocr extends React.Component {
                     this.printDictionary(error,"face",false);
                     //that.props.navigation.push('personalinfo');
                   } else {
-                    //console.log(typeof(result));
                     console.log('result',result);
                     this.printDictionary(result,"face",true);
-                    //this.props.navigation.push("personalinfo");
-                    if(result.result.match == 'yes'){
-                      console.log("success");
-                      // that.props.navigation.navigate('personalinfo');
-                      this.setDocumentModalVisible(!this.state.documentModalVisible);
-                    } else if(result.match =='no') {
-                      console.log("notmatch");
-                      alert('Face does not match. Please, try again');
-                      this.hvFace();
-                    } else {
+                    console.log('match:',result);
+                    console.log('conf',result.result.conf);
+                    this.setState({facecapture_match:result,
+                    conf:result.result.conf,
+                    match:result.result.match,
+                    match_score:result.result["match-score"]
+                    })
                       console.log("control to mobile app");
                       this.setDocumentModalVisible(!this.state.documentModalVisible);
                       this.setState({scanaadharenable:!this.state.scanaadharenable});
-                    }
+                    //}
                   }
                 }
                  RNHVNetworkHelper.makeFaceMatchCall("https://ind-faceid.hyperverge.co/v1/photo/verifyPair",imageUri,docImageUri,params,headers,closure)
@@ -657,39 +718,44 @@ export default class Ocr extends React.Component {
                     Adhaar verification
                 </Text>
                 <TouchableOpacity>
-                    <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:100}} />
+                    <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:Dimensions.get('window').width/3}} />
                 </TouchableOpacity>
                 <TouchableOpacity>
                     <Image source={require('../../assets/threedot.png')} style={{height:10,width:20, paddingTop:20,marginLeft:20}} />
                 </TouchableOpacity>
             </View>
             
-            <View>
-            <View style={{height:40, backgroundColor:'#EEEEEE', paddingTop:1,marginBottom:0}}>
-            <View style={{flexDirection:'row',paddingLeft:20,paddingTop:10}}>
-            <View>
-            <View>
-            {this.renderImage()}
-            </View>
-            </View>
-            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
-            
-            </View>
-            <View>
-            <Image style={{height:20, width:20}}
+            <View style={{height:40, backgroundColor:'rgba(65, 161, 127, 0.1)', paddingTop:1,marginBottom:20}}>
+        <View style={{flexDirection:'row',paddingLeft:20,paddingTop:10}}>
+        <View>
+        {this.renderImage()}
+        </View>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+        
+        </View>
+        <View>
+        <Image style={{height:20, width:20}}
                 source={require('../../assets/circle.png')}
             />
-            </View>
-            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
-            
-            </View>
-            <View>
-            <Image style={{height:20, width:20}}
+        </View>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+        
+        </View>
+        <View>
+        <Image style={{height:20, width:20}}
                 source={require('../../assets/circle.png')}
             />
-            </View>
-            </View>
-            </View>
+        </View>
+        <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+        
+        </View>
+        <View>
+        <Image style={{height:20, width:20}}
+                source={require('../../assets/circle.png')}
+            />
+        </View>
+        </View>
+        </View>
 
             <View style={{margin:20}}>
                 <Text style={{fontSize:16,lineHeight:25, fontFamily:'Nunito', color:'#111111'}}>
@@ -702,7 +768,7 @@ export default class Ocr extends React.Component {
                 </Text>
             </View>
             {this.state.scanaadharenable == true ?
-            <View style={{ width:'45%',borderRadius:5, marginTop:35, backgroundColor:'#2A9134', alignSelf:'center'}}>
+            <View style={{ width:160,borderRadius:5, marginTop:35, backgroundColor:'#2A9134', alignSelf:'center'}}>
                     <TouchableOpacity 
                    // disabled={!this.state.scanaadharenable}
                     //onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
@@ -722,8 +788,8 @@ export default class Ocr extends React.Component {
                   <Text style={{margin:20, marginTop:20, fontSize:14, fontFamily:'roboto'}}>OCR completed. Click on submit to complete other steps.</Text>
                   <View style={{ width:'30%',borderRadius:5, marginTop:20, backgroundColor:'#2A9134', alignSelf:'center'}}>
                   <TouchableOpacity style={{height:30,width:'100%',alignItems:'center',borderColor:'#2A9134',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
-                  onPress={()=> {this.setState({showCircleImg:!this.state.showCircleImg, ocrcompleted:!this.state.ocrcompleted}),
-                   this.props.navigation.navigate('personalinfo'), this.insert_adhaardata_into_MySQL()}}
+                  onPress={()=> {this.setState({showCircleImg:!this.state.showCircleImg, ocrcompleted:!this.state.ocrcompleted}) //}}
+                   this.props.navigation.navigate('personalinfo'), this.insert_adhaardata_into_MySQL(),this.insert_facecapturedata_into_MySQL()}}
                   >
                 <Text style={{textAlign:'center',color:'#ffffff'}}>
                 Submit
@@ -806,7 +872,7 @@ export default class Ocr extends React.Component {
             </View>
             </Modal>
             </View>
-            {/*<Text style={styles.intro}>This is a demo application developed using the react native wrappers of HyperSnapSDK </Text>
+            /*<Text style={styles.intro}>This is a demo application developed using the react native wrappers of HyperSnapSDK </Text>
               <View style={styles.subcontainer}><Button
                 style={styles.button}
                 onPress={()=>{this.setDocumentModalVisible(true);}}
@@ -820,8 +886,8 @@ export default class Ocr extends React.Component {
           <View style={styles.subcontainer}><Button
                 style={styles.button}
                 onPress={()=>{this.setQRModalVisible(true);}}
-                title="QR Capture"/></View>*/}
-              </View>
+                title="QR Capture"/></View>
+              </View>*/
 
         );
     }
