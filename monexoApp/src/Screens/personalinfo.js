@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
-import {View, Text,TextInput, CheckBox,Button, Image, TouchableOpacity, TouchableHighlight, ScrollView, Dimensions, Alert} from 'react-native';
-import styles from '../Styles/personalinfostyles';
-import {HelperText} from 'react-native-paper';
+import {View, Text,TextInput, CheckBox,Button, Image, TouchableOpacity, TouchableHighlight, ScrollView, Dimensions, Alert, StyleSheet} from 'react-native';
+//import styles from '../Styles/personalinfostyles';
+import {HelperText, RadioButton} from 'react-native-paper';
 import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
 import DatePicker from 'react-native-datepicker';
@@ -13,6 +13,7 @@ import notselected from '../../assets/notselected.png';
 import selected from '../../assets/selected.png';
 import DropDownPicker from "react-native-custom-dropdown";
 import moment from 'moment';
+//import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import { SelectMultipleButton, SelectMultipleGroupButton } from 'react-native-selectmultiple-button'
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -27,13 +28,21 @@ const validateForm = (errors) => {
     return valid;
   }
   const genders = [ { id: 1, label: 'Male', value: 'M', }, {
-    id: 2, label: 'Female', value: 'F', }, ]
+    id: 2, label: 'Female', value: 'F', },]
+
+const professiontype=[
+    {id:1, title:'',data:[{label: 'Pvt Ltd', value: 'Pvt Ltd',}, {label:'LLP',value:'LLP'}, {label:'Public Ltd',value:'Public Ltd'}, {label:'Central Govt',value:'Central Govt'}, {label:'State Govt',value:'State Govt'}]},
+     {id:2, title:'',data:[{label:'Student',value:'Student'}]},
+     {id:3,title:'',data:[{label:'Self-Employed',value:'Self-Employed'}]}];
+
 
 export default class personalinfo extends React.Component{
 
     constructor(props){
         super(props)
         this.state={
+            appid:'',
+            customerid:'',
             fullname:'',
          //   dob:(new Date()).toLocaleString(),
             date:new Date(),
@@ -72,6 +81,11 @@ export default class personalinfo extends React.Component{
             adhaarnumber:0,
             firstnameStatus:false,
             hidelocalitysublocality:false,
+            studentnotselected:false,
+            student:'student',
+            latitude:'',
+            longitude:'',
+            profession_type:''
         };
         this.onSubmit = this.onSubmit.bind(this);
         this.fetchData = this.fetchData.bind(this);
@@ -321,22 +335,25 @@ onChangeAddress(address){
     body:
       JSON.stringify(
           {
-        appid: '12345',
+        "appid": '12345',
        // fullname:this.state.fullname,
-        firstname:this.state.firstname,
-        lastname:this.state.lastname,
-        dob:this.state.date,
-        father:this.state.fathername,
-        gender_type:this.state.gender,
-        personal_email_id:this.state.email,
-        pincode:this.state.pincode,
-        city:this.state.city,
-        state:this.state.state,
-        locality:this.state.locality,
-        sublocality:this.state.sublocality,
-        address:this.state.address,
-        profession_type:this.state.salariedselected,
-        pannumber:this.state.pannumber,
+        "firstname":this.state.firstname,
+        "lastname":this.state.lastname,
+        "dob":this.state.date,
+        "father":this.state.fathername,
+        "gender_type":this.state.gender,
+        "personal_email_id":this.state.email,
+        "pincode":this.state.pincode,
+        "city":this.state.city,
+        "state":this.state.state,
+        "locality":this.state.locality,
+        "sublocality":this.state.sublocality,
+        "address":this.state.address,
+        "profession_type":this.state.salariedselected || this.state.profession_type,
+        "pannumber":this.state.pannumber,
+        "adhaarnumber":this.state.adhaarnumber,
+        "current_address_latitude":this.state.latitude,
+        "current_address_longitude":this.state.longitude,
       }
       )
   }).then((response) =>response.json())
@@ -396,7 +413,7 @@ updateSalesforce = () => {
        body:
        {"data":[
         {"Account":
-            {"0011e000008B8X8AAK":
+            {"":
                 {
                 "peer__First_Name__c":this.state.firstname,
                 "peer__Last_Name__c":this.state.lastname,
@@ -406,26 +423,32 @@ updateSalesforce = () => {
                 "peer__Date_of_Birth__c":this.state.date,
                 "PAN__c":this.state.pannumber,
                 "Aadhar_Number__c":this.state.adhaarnumber,
-                "Employment_status__c":this.state.salariedselected,
+                "Employment_status__c":this.state.profession_type,
                 }
             },
         },
         {"loan__Address__c":
-            {"0011e000008B8X8AA":
-                {"Customer__c":"0011e000008B8X8AAK", 
-                "Room_Flat__c":"Chennai",
-                "Floor__c":"Test",
-                "Block__c":"test2",
-                "Building_name__c":"test",
+            {"":
+                {"Customer__c":this.state.customerid, 
+                "Room_Flat__c":this.state.address,
+                "Floor__c":this.state.address,
+                "Block__c":this.state.address,
+                "Building_name__c":this.state.address,
                 "Door_No_Street_name__c":this.state.address,
-                "Locality__c":this.state.locality,
+                "Locality__c":this.state.locality +' '+this.state.sublocality,
                 "PinCode__c":this.state.pincode,
                 "loan__City__c":this.state.city,
-                "loan__State__c":this.state.state
+                "loan__State__c":this.state.state,
+                "loan__Address_Type__c":"Residential"
                 }
             }
         },
-        
+        {"Application":
+            {"":
+                {"Status":"FORM INCOMPLETE"
+                }
+            }
+        },
         ]
         } 
     })
@@ -542,6 +565,34 @@ updateSalesforce = () => {
                 console.error(error);
             });
     };
+
+    fetchLatLong = async () => {
+        await delay(5000)
+        console.log('geospoc-latlong');
+        fetch('http://127.0.0.1:8000/geocode'+this.state.address+this.state.city+this.state.pincode)
+            .then((response) => response.json())
+            .then((responseJson) => {
+               console.log(responseJson);
+                //if(responseJson.status=='ok'){
+                //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
+               //}
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    };
+
+
+    checkDrink(professionkey, object) {
+        var i;
+        for (i = 0; i < object.length; i++) {
+          if (object[i].isChecked === 'checked') {
+            object[i].isChecked = 'unchecked';
+          }
+        }
+        professionkey.isChecked = "checked";
+        //this.setState({ refresh: true });
+      }
 
     render(){
         const {city,state,locality,sublocality} = this.state;
@@ -871,6 +922,7 @@ updateSalesforce = () => {
                     <Image style={{marginLeft:Dimensions.get('window').width/2+20, height:30, width:30, marginTop:15}}source={require("../../assets/downarrow.png")}/>
             </TouchableOpacity>
             </View>}
+      
             {this.state.dropdownvisible == true ?
             this.state.salarieddata.map((salarieddata, key) => {
         return (
@@ -885,7 +937,7 @@ updateSalesforce = () => {
                 </View>
                 :
                 <View>  
-                <TouchableOpacity onPress={()=>{this.setState({salariedselected: key,ButtonStateHolder : false, visible:true})}} 
+                <TouchableOpacity onPress={()=>{this.setState({profession_type: value,ButtonStateHolder : false, visible:true})}} 
                 //onPress={()=>this.setProfession(value)}     // salarieddata.get(key) salari[key]
                //onPress={()=>console.log("profession:",this.state.salariedselected)}
                 
@@ -900,10 +952,78 @@ updateSalesforce = () => {
         )
         }) :null}
 
-        {this.state.data.map((data, value) => {
+        <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+                <TouchableOpacity //onPress={()=>{this.setState({checked: key})}} 
+                //onPress={() => {this.state.data == 'Self-Employed' ? alert('This product coming soon...') : null}}
+                onPress={() => alert('This product coming soon...')}
+                style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
+                    <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
+                    <Text style={{marginLeft:10, }}>Self-Employed</Text>
+                    
+                </TouchableOpacity>
+                </View>
+
+
+                <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+                {this.state.studentnotselected == false?
+                 <TouchableOpacity onPress={()=>{this.setState({ButtonStateHolder : false, visible:false,studentnotselected:true, profession_type:'student'})}}
+                 style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
+                     <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
+                     <Text style={{marginLeft:10, }}>Student</Text> 
+                 </TouchableOpacity>
+                :
+                <TouchableOpacity style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
+                    <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
+                    <Text style={{marginLeft:10,marginTop:15}}>Student</Text>
+                </TouchableOpacity>
+                }
+                </View>
+
+
+                {/*<View style={{marginLeft:20,marginTop:15, marginRight:20, borderColor:'#2A9154'}}>
+            <Text >Profession</Text> 
+                {this.state.profession == false ?
+
+                <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+                <TouchableOpacity 
+                onPress={() =>{this.setState({profession:true})}}
+                style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
+                    <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
+                    <Text style={{marginLeft:10, }}>Salaried</Text>
+                    <Image style={{marginLeft:Dimensions.get('window').width/2+20, height:30, width:30}}source={require("../../assets/downarrow.png")}/>
+                </TouchableOpacity>
+                </View> :
+            <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+            <TouchableOpacity onPress={() =>{this.setState({dropdownvisible:true})}}
+            style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
+                    <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
+                    <Text style={{marginLeft:10,marginTop:15}}>Salaried</Text>
+                    <Image style={{marginLeft:Dimensions.get('window').width/2+20, height:30, width:30, marginTop:15}}source={require("../../assets/downarrow.png")}/>
+            </TouchableOpacity>
+            </View>}
+
+            {this.state.dropdownvisible == true ?
+                <View style={{ flex: 1, padding: 20, backgroundColor: "#f2f2f2" }}>
+                {professiontype.map((object, d) =>
+          <View key={d} style={{ justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 18, marginBottom: 20 }}>{object.title}</Text>
+            {object.data.map((professionkey, i) =>
+              <View key={i} style={styles.drinkCard}>
+                <RadioButton value={professionkey.label} status={professionkey.isChecked} onPress={() => this.checkDrink(professionkey, object.data)} />
+                <Text style={{ fontSize: 20, paddingLeft: 10 }}>{professionkey.label}</Text>
+              </View>
+            )}
+          </View>
+            )}
+            </View>
+            :null}
+            </View>*/}
+
+
+        {/*{this.state.data.map((data, value) => {
         return (
             <View value={value} style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
-            {this.state.checked == value ?
+            {this.state.checked == value ? 
             <View >
                 <TouchableOpacity style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
                     <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
@@ -912,19 +1032,21 @@ updateSalesforce = () => {
                 </TouchableOpacity>
                 </View>
                 :
+                
                 <View>
                 <TouchableOpacity onPress={()=>{this.setState({checked: key})}} 
+                //onPress={() => {this.state.data == 'Self-Employed' ? alert('This product coming soon...') : null}}
                 onPress={() => alert('This product coming soon...')}
                 style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
                     <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
                     <Text style={{marginLeft:10, }}>{data}</Text>
-                    {/*<Image style={{marginLeft:190, height:30, width:30}}source={require("../../assets/downarrow.png")}/>*/}
+                    
                 </TouchableOpacity>
                 </View>
             }
             </View>
         )
-        })}
+        })}*/}
 
 
       {/*  <DropDownPicker 
@@ -1067,25 +1189,38 @@ updateSalesforce = () => {
     <Text></Text>
         }
 
-        <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder || !this.state.validPan ? 'rgba(42,145,52,0.3)':'#2A9134',marginBottom:20,}}
-            disabled={this.state.ButtonStateHolder || 
-                !this.state.validPan || this.state.firstname == '' || 
-                this.state.lastname || this.state.date == '' || this.state.fathername=='' || 
-                this.state.gender =='' || this.state.email=='' || this.state.adhaarnumber =='' || 
-                this.state.pincode=='' || this.state.city=='' || this.state.state ||
-                this.state.locality=='' || this.state.address==''
-            }
+        <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder  ? 'rgba(42,145,52,0.3)':'#2A9134',marginBottom:20,}}
+           // disabled={this.state.ButtonStateHolder || 
+           //     this.state.firstname == '' || 
+           //     this.state.lastname || this.state.date == '' || this.state.fathername=='' || 
+           //     this.state.gender =='' || this.state.email=='' || this.state.adhaarnumber =='' || 
+           //     this.state.pincode=='' || this.state.city=='' || this.state.state ||
+           //     this.state.locality=='' || this.state.address==''
+           // }
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
             onPress={() => {this.insertdata_into_db(); this.getFullName()}}
-            onPress={() => this.props.navigation.navigate('bankdetails',{accountholdername:this.state.fullname})}
+            //onPress={() => this.props.navigation.navigate('bankdetails',{accountholdername:this.state.fullname})}
+            onPress={() => {this.state.studentnotselected == false? this.props.navigation.navigate('employerdetails'): this.props.navigation.navigate('collegedetails')}}
         >
             <Text style={{textAlign:'center',paddingTop:7}}>
                 Submit
             </Text>
         </TouchableOpacity>
         </ScrollView>
-        </View>
-        
+        </View>  
     );
     }
 }
+
+const styles = StyleSheet.create({
+    drinkCard: {
+      paddingLeft: 6,
+      alignItems: 'center',
+      flexDirection: 'row',
+      marginBottom: 16,
+      backgroundColor: 'white',
+      height: 55,
+      elevation: 1,
+      borderRadius: 4,
+    }
+  })

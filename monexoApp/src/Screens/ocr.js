@@ -120,19 +120,19 @@ export default class Ocr extends React.Component {
         },
         body:
           {
-            appid: this.state.appid,
+            "appid": this.state.appid,
            // customerid:this.state.customerid,
-            name:this.state.name,
-            aadhaar:this.state.aadhaar_number,
-            father:this.state.father,
-            dob:this.state.dob,
-            mother:this.state.mother,
-            address:this.state.address,
-            phone:this.state.phone,
-            gender:this.state.gender,
-            qr:this.state.qr,
-            adhaarfront_response:this.state.adhaarfront_response,
-            adhaarback_response:this.state.adhaarback_response
+            "name":this.state.name,
+            "aadhaar":this.state.aadhaar_number,
+            "father":this.state.father,
+            "dob":this.state.dob,
+            "mother":this.state.mother,
+            "address":this.state.address,
+            "phone":this.state.phone,
+            "gender":this.state.gender,
+            "qr":this.state.qr,
+            "adhaarfront_response":this.state.adhaarfront_response,
+            "adhaarback_response":this.state.adhaarback_response
           }
       }).then((response) =>response.json())
         .then((responseJson) =>{
@@ -156,18 +156,18 @@ export default class Ocr extends React.Component {
         },
         body:
           {
-            appid: this.state.appid,
+            "appid": this.state.appid,
            // customerid:this.state.customerid,
-            base:'adhaar',
-            compare_with:'selfie',
-            conf:this.state.conf,
-            match:this.state.match,
-            match_score:this.state.match_score,
-            liveness:this.state.liveness,
-            liveness_score:this.state.liveness_score,
-            to_be_reviewed:this.state.to_be_reviewed,
-            jsontext:this.state.facecapture_response,
-            facecapture_match:this.state.facecapture_match
+            "base":'adhaar',
+            "compare_with":'selfie',
+            "conf":this.state.conf,
+            "match":this.state.match,
+            "match_score":this.state.match_score,
+            "liveness":this.state.liveness,
+            'liveness_score':this.state.liveness_score,
+            "to_be_reviewed":this.state.to_be_reviewed,
+            "jsontext":this.state.facecapture_response,
+            "facecapture_match":this.state.facecapture_match
           }
       }).then((response) =>response.json())
         .then((responseJson) =>{

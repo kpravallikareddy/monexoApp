@@ -51,7 +51,7 @@ export default class Preoffer extends React.Component {
             showHide:false,
             htmldata:null,
             bank_details_customer:'No',
-            appid:'12345',
+            appid:'',
             customerid:'',
             webviewvisible:false,
             webview:null,
@@ -69,6 +69,7 @@ export default class Preoffer extends React.Component {
             jwttoken:'',
             summaryforsavingsresponse:'',
             jwtokenresponse:'',
+            bankdetailsverified:false,
            
         }
         //this.onSubmit = this.onSubmit.bind(this);
@@ -98,12 +99,13 @@ export default class Preoffer extends React.Component {
         body:
           JSON.stringify(
               {
-            appid: '12345',
-            name_as_in_bank_account:this.state.name,
-            ifsc_code:this.state.ifsc,
-            account_number:this.state.accnumber,
-            bank_name:this.state.bankname,
-            branch_name:this.state.branch
+            "appid": this.state.appid,
+            "customerid":this.state.customerid,
+            "name_as_in_bank_account":this.state.name,
+            "ifsc_code":this.state.ifsc,
+            "account_number":this.state.accnumber,
+            "bank_name":this.state.bankname,
+            "branch_name":this.state.branch
           }
           )
       }).then((response) =>response.json())
@@ -128,7 +130,7 @@ export default class Preoffer extends React.Component {
     console.log('data:',data);
    // console.log(JSON.parse(data));
    const details = JSON.parse(data);
-   console.log('uid:',details.data[0].accountUID);
+  // console.log('uid:',details.data[0].accountUID);
     this.setState({jsonresponse:data, 
         status:details.status,
         bank:details.data[0].bank,
@@ -143,7 +145,7 @@ export default class Preoffer extends React.Component {
     this.getsummaryforsavings();
     this.insertsummaryforsavings_into_db();
    // this.props.navigation.navigate('employerdetails')
-   // this.setState({webviewvisible:false, secondsubmitvisible:true});
+    this.setState({webviewvisible:false, secondsubmitvisible:true,bankdetailsverified:true});
   };
 
 
@@ -202,9 +204,9 @@ insertsummaryforsavings_into_db = async () => {
   body:
     JSON.stringify(
         {
-      appid: '12345',
-      customerid:'43657658',
-      jsonresponse:JSON.stringify(this.state.summaryforsavingsresponse),
+      "appid": this.state.appid,
+      "customerid":this.state.customerid,
+      "jsonresponse":JSON.stringify(this.state.summaryforsavingsresponse),
     }
     )
 }).then((response) =>response)
@@ -231,8 +233,8 @@ insertjwttoken_into_db = async () => {
   body:
     JSON.stringify(
         {
-      "appid": "12345",
-      "customerid":"43657658",
+      "appid": this.state.appid,
+      "customerid":this.state.customerid,
       "jsonresponse":JSON.stringify(this.state.jwtokenresponse)
     }
     )
@@ -259,8 +261,8 @@ insertjwttoken_into_db = async () => {
     body:
       JSON.stringify(
           {
-        "appid": "12345",
-        "customerid":"43657658",
+        "appid": this.state.appid,
+        "customerid":this.state.customerid,
         "status":this.state.status,
         "bank":this.state.bank,
         "accountType":this.state.accountType,
@@ -388,15 +390,21 @@ insertjwttoken_into_db = async () => {
        body:
        {"data":[
         {"loan__Bank_Account__c":
-            {"0011e000008B8X8AAK":
+            {"":
                 {
                 "loan__Bank_Account_Number__c":this.state.accnumber,
                 "loan__Bank_Name__c":this.state.bankname,
                 "Branch_Name__c":this.state.branch,
-                "IFSC_code__c":this.state.ifsc
-                  
+                "IFSC_code__c":this.state.ifsc,
+                "loan__Account_Name__c":this.state.accountHolderName  
                 }
             },
+        },
+        {"Application":
+            {"":
+                {"Status":"FORM COMPLETE, DOCUMENTS PENDING"
+                }
+            }
         },
         
         ]
@@ -421,6 +429,22 @@ insertjwttoken_into_db = async () => {
             const {checked, showHide,htmldata, name,ifsc,bankname, branch} = this.state;
            // const contentWidth = useWindowDimensions().width;
         return (
+          <ScrollView>
+            {this.state.webviewvisible == true ?
+            <WebView
+            ref={ref => {
+            this.webview = ref;
+            }}
+            source={{ uri: "https://unifiedtrial.finbit.io/web/?accessToken=1tb67688tbi18kdppglcca89lmoqit7r&locationurl=https://unifiedtrial.finbit.io" }}
+            onMessage={this.onMessage}
+            // injectedJavaScript={`window.testMessage = "hello world"`}
+            injectedJavaScript={INJECTED_JAVASCRIPT}
+           // onNavigationStateChange={this._onNavigationStateChange.bind(this)}
+           onNavigationStateChange={this.handleWebViewNavigationStateChange}
+           style={{ flex: 1, height:500, width:Dimensions.get('window').width }}
+            />
+            :
+            
             <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
             <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
                 <TouchableOpacity> 
@@ -456,34 +480,19 @@ insertjwttoken_into_db = async () => {
             
             </View>
             <View>
-            {this.renderImage()}
+            <Image style={{height:20, width:20}}
+                source={require('../../assets/check_circle.png')}
+            />
             </View>
             <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
             
             </View>
             <View>
-            <Image style={{height:20, width:20}}
-                source={require('../../assets/circle.png')}
-            />
+            {this.renderImage()}
             </View>
             </View>
             </View>
             
-            <ScrollView>
-            {this.state.webviewvisible == true ?
-            <WebView
-            ref={ref => {
-            this.webview = ref;
-            }}
-            source={{ uri: "https://unifiedtrial.finbit.io/web/?accessToken=1tb67688tbi18kdppglcca89lmoqit7r&locationurl=https://unifiedtrial.finbit.io" }}
-            onMessage={this.onMessage}
-            // injectedJavaScript={`window.testMessage = "hello world"`}
-            injectedJavaScript={INJECTED_JAVASCRIPT}
-           // onNavigationStateChange={this._onNavigationStateChange.bind(this)}
-           onNavigationStateChange={this.handleWebViewNavigationStateChange}
-           style={{ flex: 1, height:500, width:Dimensions.get('window').width }}
-            />
-            : 
             <View>
             <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:0,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
@@ -502,10 +511,12 @@ insertjwttoken_into_db = async () => {
                 <Image source={require('../../assets/ifsc.png')} style={{height:20,width:20,marginTop:10}} />
            <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Bank IFSC code</HelperText>
             <TextInput 
-            placeholder=' '  maxLength={11} autoCapitalize = 'words'
+            placeholder=' '  maxLength={11} autoCapitalize = 'characters'
             value={this.state.ifsc}
+            //onChangeText={(text) => this.setState({ text: text.toUpperCase() })}
             onChangeText={(text) => {this.onChanged(text); this.fetchData(text);}}
            // onChangeText={(ifsc) => {this.setState({ifsc})}} 
+           // 
             placeholderTextColor = "rgba(0,0,0,0.3)" style={{flex:1,marginTop: 10,marginLeft:-100,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
@@ -562,10 +573,10 @@ insertjwttoken_into_db = async () => {
             <View>
             {this.state.showHide == false ? 
           <TouchableOpacity style={{marginTop:10,marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? 'rgba(42,145,52,0.5)':'#2A9134', opacity:0.5,marginBottom:20}}
-          disabled={this.state.accountHolderName =='' ||
-          this.state.ifsc =='' || this.state.accnumber =='' //||
+         // disabled={this.state.accountHolderName =='' ||
+          //this.state.ifsc =='' || this.state.accnumber =='' //||
           //this.state.bankname ==''|| this.state.branch ==''
-          }
+         // }
           onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg, showHide:!this.state.showHide,bank_details_customer:'Yes'})}
          //  onPress={() => {this.insertdata_into_db()}}
          // onPress={() => this.props.navigation.navigate('employerdetails')}
@@ -627,9 +638,10 @@ insertjwttoken_into_db = async () => {
             </View>
             </View>
             </View> 
-        }
-            </ScrollView>
             </View>
+        }
+            
+            </ScrollView>
             
         );
     }

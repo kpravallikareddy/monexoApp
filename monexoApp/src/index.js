@@ -18,7 +18,10 @@ import feepayment from './Screens/feepayment'
 import cameraexample from './Screens/cameraexample'
 import ocrmon from './Screens/ocrmon'
 import home from './Screens/home'
+import collegedetails from './Screens/collegedetails'
+import creditscore from './Screens/creditscore'
 //import './Screens/intro';
+
 
 export const AppNavigator = createStackNavigator(
     {
@@ -115,6 +118,18 @@ export const AppNavigator = createStackNavigator(
       },
       home:{
         screen:home,
+        navigationOptions: ({navigation}) => ({
+          headerShown:false
+        }),
+      },
+      collegedetails:{
+        screen:collegedetails,
+        navigationOptions: ({navigation}) => ({
+          headerShown:false
+        }),
+      },
+      creditscore:{
+        screen:creditscore,
         navigationOptions: ({navigation}) => ({
           headerShown:false
         }),

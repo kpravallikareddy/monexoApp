@@ -74,18 +74,18 @@ export default class Pl extends React.Component {
         body:
           JSON.stringify(
               {
-            appid: '12345',
-            customerid:this.state.customerid,
-            pl_amount:this.state.pl_amount,
-            pl_tenure:this.state.pl_tenure,
-            min_amt:this.state.min_amt,
-            max_amt:this.state.max_amt,
-            min_tenure:this.state.min_tenure,
-            max_tenure:this.state.max_tenure,
-            final_amt:this.state.selected_pl_amt,
-            final_tenure:this.state.selected_pl_tenure,
-            interest_rate:this.state.interest_rate,
-            terms_accepted:this.state.terms_accepted,
+            "appid": '12345',
+            "customerid":this.state.customerid,
+            "pl_amount":this.state.pl_amount,
+            "pl_tenure":this.state.pl_tenure,
+            "min_amt":this.state.min_amt,
+            "max_amt":this.state.max_amt,
+            "min_tenure":this.state.min_tenure,
+            "max_tenure":this.state.max_tenure,
+            "final_amt":this.state.selected_pl_amt,
+            "final_tenure":this.state.selected_pl_tenure,
+            "interest_rate":this.state.interest_rate,
+            "terms_accepted":this.state.terms_accepted,
           }
           )
       }).then((response) =>response.json())

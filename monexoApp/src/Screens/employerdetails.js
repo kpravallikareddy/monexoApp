@@ -6,7 +6,7 @@ import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
 import DocumentPicker from 'react-native-document-picker';
 import { Platform } from 'react-native';
-import PdfThumbnail from 'react-native-pdf-thumbnail';
+
 
 var ImagePicker = require('react-native-image-picker');
 
@@ -92,9 +92,9 @@ export default class Employerdetails extends React.Component{
             type:'',
             singleFileOBJ:'',
             photo:null,
-            appid:'123456789',
+            appid:'',
+            customerid:'',
             pdf:null,
-            thumbnail:'',
             filename:'',
             array:['employeeid_front', 'employeeid_back','payslip1']
         };
@@ -155,16 +155,25 @@ export default class Employerdetails extends React.Component{
   
   selectFile = async () => {
     try {
-      const {results} = await DocumentPicker.pick({
-        type: [DocumentPicker.types.images],
+      const res = await DocumentPicker.pick({
+        type: [DocumentPicker.types.allFiles],
       });
-     // const result = PdfThumbnail.generate(results, 0);
-      this.setState({thumbnail:results});
-      console.log("uri:",results);
-      //setError(undefined);
-     // this.setState({singleFileOBJ:results});
-     // this.setState({fileUri:thumbnail.uri});
-     // console.log('response:',this.state.singleFileOBJ)
+      if(res) {
+        let uri = res.uri;
+        if(Platform.OS === 'ios') {
+          uri = res.uri.replace('file://','');
+        }
+        console.log('URI : ' + uri);
+        FileViewer.open(uri)
+          .then(() => {
+            // Do whatever you want
+            console.log('Success');
+          })
+          .catch(_err => {
+            // Do whatever you want
+            console.log(_err);
+          });
+      }
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         alert('Canceled');
@@ -190,8 +199,7 @@ export default class Employerdetails extends React.Component{
   */
 
 
-
-
+  
    launchCamera = () => {
     let options = {
       storageOptions: {
@@ -233,7 +241,6 @@ export default class Employerdetails extends React.Component{
       }
     });
   }
-
 
 
   launchImageLibrary = () => {
@@ -354,7 +361,7 @@ export default class Employerdetails extends React.Component{
           modalVisible:false
         });
         if(this.state.idfrontclicked == true){
-          this.setState({filename:'employeeback_front'})
+          this.setState({filename:'employeeid_back'})
            delay(3000)
           this.handleUploadPhoto();
         }
@@ -442,9 +449,8 @@ export default class Employerdetails extends React.Component{
     } else if (this.state.type == '.pdf') {
       <View style={{flexDirection:'row'}}>
         <View style={{width:150, height:150,borderRadius:5, borderColor:'#000000', borderWidth:0.5, marginHorizontal:0}}>
-        <Image
-        source={thumbnail}
-        resizeMode="contain"
+        <Pdf
+        source = {this.state.fileUri}
         style={{width:150,height:150, marginBottom:0}}
       />
       </View>
@@ -565,19 +571,20 @@ export default class Employerdetails extends React.Component{
         body:
           JSON.stringify(
               {
-            appid: '778906',
-            employer_name:this.state.employername,
-            official_email:!this.state.noemail,
-            official_email_id:this.state.email,
-            pincode:this.state.pincode,
-            city:this.state.city,
-            state:this.state.state,
-            locality:this.state.locality,
-            sublocality:this.state.sublocality,
-            address:this.state.address,
-            employee_id_card:this.state.noemail,
-            payslip:this.state.payslip,
-            confirmation_for_id_card:this.state.noemail,
+            "appid":this.state.appid,
+            "customerid":this.state.customerid,
+            "employer_name":this.state.employername,
+            "official_email":!this.state.noemail,
+            "official_email_id":this.state.email,
+            "pincode":this.state.pincode,
+            "city":this.state.city,
+            "state":this.state.state,
+            "locality":this.state.locality,
+            "sublocality":this.state.sublocality,
+            "address":this.state.address,
+            "employee_id_card":this.state.noemail,
+            "payslip":this.state.payslip,
+            "confirmation_for_id_card":this.state.noemail,
           }
           )
       }).then((response) =>response.json())
@@ -589,6 +596,60 @@ export default class Employerdetails extends React.Component{
         });
     }
 
+    updateSalesforce = () => {
+      console.log('salesforce');
+      fetch('http://uat-newapioth.monexo.co/api/saleForceUpdateRecords',
+      {
+          method:'POST',
+          headers:{
+           // Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+         body:
+         {"data":[
+          {"genesis__Applications__c":
+              {"":
+                  {
+                  "genesis__Company__c":this.state.employername,
+                  "Office_Email_Id":this.state.email
+                  }
+              },
+          },
+          {"loan__Address__c":
+              {"":
+                  {"Customer__c":this.state.customerid, 
+                  "Room_Flat__c":this.state.address,
+                  "Floor__c":this.state.address,
+                  "Block__c":this.state.address,
+                  "Building_name__c":this.state.address,
+                  "Door_No_Street_name__c":this.state.address,
+                  "Locality__c":this.state.locality+' '+this.state.sublocality,
+                  "PinCode__c":this.state.pincode,
+                  "City__c":this.state.city,
+                  "State__c":this.state.state,
+                  "loan__Address_Type__c":"Business"
+                  }
+              }
+          },
+          {"Application":
+            {"":
+                {"Status":"FORM INCOMPLETE"
+                }
+            }
+        },
+          
+          ]
+          } 
+      })
+      .then((response) =>response.text())
+      .then((responseJson) =>{
+      console.log(responseJson)
+      }).catch((error) =>
+      {
+        console.error(error);
+      });
+  }
+  
 
 
     onChangeEmail(email) {
@@ -796,15 +857,16 @@ fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
             
             </View>
             <View>
-            <Image style={{height:20, width:20}}
-                source={require('../../assets/check_circle.png')}
-            />
+            {this.renderImage()}
+            
             </View>
             <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
             
             </View>
             <View>
-            {this.renderImage()}
+            <Image style={{height:20, width:20}}
+                source={require('../../assets/circle.png')}
+            />
             </View>
             </View>
         </View>
@@ -880,7 +942,7 @@ fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
             <View>
             <View style={{flexDirection:'row', marginLeft:20, marginTop:-5,}}>
             {this.state.idfrontclicked == false ?
-                <View style={{ width:150,height:150,borderRadius:5, borderWidth:0.1}}>
+                <View style={{ width:180,height:150,borderRadius:5, borderWidth:0.1}}>
                    {/* {this.state.isCameraVisible == false ?*/}
                     <TouchableOpacity style={{alignItems:'center',marginTop:60}}
                     //onPress = {this.showCameraView}
@@ -898,7 +960,7 @@ fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
                     </View>
                 </View>
                 :
-                <View style={{ width:150,height:150,borderRadius:5, borderWidth:0.1}}>
+                <View style={{ width:180,height:150,borderRadius:5, borderWidth:0.1}}>
                      {this.renderIdfront()} 
                     <View style={{width:'100%', position:'absolute',height:24, backgroundColor:'#888888',borderBottomLeftRadius:5,borderBottomRightRadius:5, marginTop:130,justifyContent:'center', alignItems:'center'}}>
                     <Text style={{fontSize:10, color:'#ffffff'}}>
@@ -909,7 +971,7 @@ fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
                 }
   
                 {this.state.idbackclicked == false ?
-                <View style={{ width:'45%',height:150,borderRadius:5, borderWidth:0.1, marginLeft:10}}>
+                <View style={{ width:180,height:150,borderRadius:5, borderWidth:0.1, marginLeft:10}}>
                     
                     <TouchableOpacity style={{alignItems:'center',marginTop:60}}
                     //onPress = {this.showCameraView}
@@ -926,7 +988,7 @@ fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
                     </View>
                 </View>
                 :
-                <View style={{ width:150,height:150,borderRadius:5, borderWidth:0.1, marginLeft:10}}>
+                <View style={{ width:180,height:150,borderRadius:5, borderWidth:0.1, marginLeft:10}}>
                     {/*{this.renderIdback()} */}
                     <View style={{width:'100%', position:'absolute',height:24, backgroundColor:'#888888',borderBottomLeftRadius:5,borderBottomRightRadius:5, marginTop:130,justifyContent:'center', alignItems:'center'}}>
                     <Text style={{fontSize:10, color:'#ffffff'}}>
@@ -1110,10 +1172,14 @@ fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
                 </View>*/}
                 
         <TouchableOpacity style={{marginRight:20,marginTop:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? 'rgba(42,145,52,0.5)':'#2A9134',marginBottom:20}}
-            disabled={!this.state.address}
+           // disabled={!this.state.address}
+           disabled={this.state.ButtonStateHolder || 
+                 this.state.employername == '' || 
+                 this.state.pincode=='' || this.state.city=='' || this.state.state ||
+                 this.state.locality=='' || this.state.address==''}
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
            // onPress={() => {this.handleUploadPhoto()}}     //this.uploadtoS3();this.insertdata_into_db(); 
-           // onPress={() => this.props.navigation.navigate('preoffer')}
+            onPress={() => this.props.navigation.navigate('bankdetails')}
         >
             <Text style={{textAlign:'center',paddingTop:7}}>
                 Submit

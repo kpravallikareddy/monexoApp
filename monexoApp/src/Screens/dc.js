@@ -11,6 +11,8 @@ import SliderText from 'react-native-slider-text';
 //import Slider from "react-native-slider";
 import Slider from '@react-native-community/slider';
 import { ScrollView } from "react-native-gesture-handler";
+import { BlurView } from "@react-native-community/blur";
+
 
 
 const maximumValue=36;
@@ -26,8 +28,19 @@ export default class Dc extends React.Component {
             sliderValue:maximumValue/2,
             value:0.2,
             modalVisible:false,
-            countchecked:[],
+            countchecked:0,
             limit:3,
+            dc_amount:0,
+            minimum_month:0,
+            maximum_month:0,
+            finalvalue:0,
+            interest_rate:0,
+            terms_accepted:false,
+            selected_dc:0,
+            amount1:0,
+            amount2:0,
+            amount3:0,
+
             //modelHeight:Dimensions.get('window').height/2-10,
         }
         //this.onSubmit = this.onSubmit.bind(this);
@@ -60,6 +73,72 @@ export default class Dc extends React.Component {
         });
       };
 
+      insertdata_into_db = async () => {
+        console.log('test');
+       await fetch('http://10.0.2.2:8000/offer_details_dc/',
+      {
+        method:'POST',
+        headers:{
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body:
+          JSON.stringify(
+              {
+            "appid": '12345',
+            "customerid":this.state.customerid,
+            "dc_amount":this.state.dc_amount,  
+            "minimum_month":this.state.minimum_month,
+            "maximum_month":this.state.maximum_month,
+            "finalvalue":this.state.finalvalue,
+            "interest_rate":this.state.interest_rate,
+            "terms_accepted":this.state.terms_accepted,
+          }
+          )
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    }
+
+    insert_cust_selectdata_into_db = async () => {
+        console.log('test');
+       await fetch('http://10.0.2.2:8000/offer_details_dc_cust_selects/',
+      {
+        method:'POST',
+        headers:{
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body:
+          JSON.stringify(
+              {
+            "appid": '12345',
+            "customerid":this.state.customerid,
+            "selected_dc":this.state.selected_dc,
+          }
+          )
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    }
+
+
+    onChangeamount(text) {
+        // this.setState({amount});
+         
+         
+    }
+
+
+
     handleCheckBox = () => {this.setState({ termsAccepted: !this.state.termsAccepted })}
     
         render(){
@@ -68,21 +147,21 @@ export default class Dc extends React.Component {
         return (
             <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
                 <View style={{flex:1}}>
-            <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
+            {/*<View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
                 {/*<TouchableOpacity> 
                    {/* <Image source={require('../../assets/cancel1.png')} style={styles.cancel} />
                    <Text style={{fontSize: 16,paddingRight:20}}> X </Text>
                 </TouchableOpacity>
                 {/*<Text style={styles.title}>
                     Preliminary offer
-                </Text>*/}
+                </Text>
                 <TouchableOpacity style={{paddingLeft:160}}>
                     <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:100}} />
                 </TouchableOpacity>
                 <TouchableOpacity>
                     <Image source={require('../../assets/threedot.png')} style={{height:10,width:20, paddingTop:20,marginLeft:20}} />
                 </TouchableOpacity>
-            </View>
+                </View>*/}
             <View style={{height:40, backgroundColor:'#D1D1D1', paddingTop:1,marginBottom:20}}>
             <View style={{flexDirection:'row',paddingLeft:20,paddingTop:10}}>
             <View>
@@ -90,7 +169,7 @@ export default class Dc extends React.Component {
                 source={require('../../assets/check_circle.png')}
             />
             </View>
-            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
+            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
             
             </View>
             <View>
@@ -98,7 +177,17 @@ export default class Dc extends React.Component {
                 source={require('../../assets/check_circle.png')}
             />
             </View>
-            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:130,marginTop:10}}>
+            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
+            
+            </View>
+            <View>
+            <Image style={{height:20, width:20}}
+                source={require('../../assets/check_circle.png')}
+            />
+            
+            
+            </View>
+            <View style={{height:1,borderWidth:0.5,borderColor:'green',width:95,marginTop:10}}>
             
             </View>
             <View>
@@ -126,8 +215,8 @@ export default class Dc extends React.Component {
                 />
             </View>
  
-            <View style={{marginTop:-10, alignItems:'center'}}>
-            <Text style={{fontSize:20}}>
+            <View style={{marginTop:0, alignItems:'center', }}>
+            <Text style={{fontSize:24, fontWeight:'bold',marginBottom:10}}>
                 Congratulations
             </Text>
             </View>
@@ -142,27 +231,28 @@ export default class Dc extends React.Component {
                 ref={animation => { this.anim = animation; }} 
                 />
             </View>*/}
-            <View style={{marginTop:10, alignItems:'center', borderBottomWidth:0.5, borderBottomColor:'#D1D1D1', margin:30,paddingBottom:20}}> 
-                <Text style={{paddingBottom:5, fontFamily:'Nunito',fontWeight:'bold'}}>
-                You are Qualified 
+            <View style={{marginTop:10, alignItems:'center', borderWidth:0.5, borderColor:'#D1D1D1', margin:30,paddingBottom:20}}> 
+                <Text style={{paddingBottom:5, fontFamily:'Nunito',fontWeight:'bold', marginTop:10}}>
+                You are Qualified for
                 </Text>
                 <Text style={{fontFamily:'Nunito',fontWeight:'bold'}}>
-                for Debt consolidation upto {'\u20B9'}20,000
+                 Debt consolidation upto {'\u20B9'}70,000
                 </Text>
             </View>
             <View style={{justifyContent:'center', marginTop:-20, flexDirection:'row'}}>
-                <Text>
-                    This will help you save a highest of {" "} 
+                <Text style={{fontSize:12,fontWeight:'bold'}}>
+                    You are eligible for {'\u20B9'}70,000 and a highest saving of {" "} 
                 </Text>
-                <View style={{height:20, borderRadius:5,borderWidth:1, paddingLeft:4,paddingRight:4, backgroundColor:'#FFC700' }}>
-                <Text style={{fontSize:12}}>
-                 {'\u20B9'}2000
+                <View style={{height:20,width:64, borderRadius:15, backgroundColor:'#FFC700',alignItems:'center', justifyContent:'center' }}>
+                <Text style={{fontSize:12,fontWeight:'bold'}}>
+                 {'\u20B9'}63,451
                 </Text>
                 </View>
             </View>
             
-            <View style={{height:46,backgroundColor:"#2A9134", alignItems:'center', marginTop:10}}>
-                <View style={{height:36,borderWidth:10, borderColor:'#FFFFFF', alignItems:'center',justifyContent:'center',marginTop:5,width:120,borderRadius:15, backgroundColor:"#FFFFFF", opacity:0.4 }}>
+            <View style={{height:46,backgroundColor:"#2A9134", marginTop:10, }}>
+                <View style={{flexDirection:'row', }}> 
+                <View style={{height:36,borderWidth:1, borderColor:'#FFFFFF', alignItems:'center',justifyContent:'center',marginTop:5,width:120,borderRadius:15,marginLeft:Dimensions.get('window').width/2-50 }}>
                     <TouchableOpacity 
                     onPress={() => {this.setModalVisible(!modalVisible);}}
                     >
@@ -171,18 +261,28 @@ export default class Dc extends React.Component {
                 </Text>
                 </TouchableOpacity>
                 </View>
+                {this.state.countchecked >0 ?
+                <View style={{justifyContent:'center', flexDirection:'row', alignItems:'center',}}>
+                    <Image style={{height:20, width:20, marginLeft:5}}
+                    source={require('../../assets/card2.png')}
+                    />
+                    <Text style={{color:'#ffffff', fontWeight:'bold', fontSize:10}}>
+                       {"  "} {this.state.countchecked} Cards selected
+                    </Text>
+                </View>:null}
+                </View>
                 <View style={{width:'100%'}}>
                     <Modal
-                    animationType="slide"
+                    animationType='slide'
                     transparent={true}
                     visible={modalVisible}
-                    style={{height: 600}}
+                    //style={{height: 600}}
                     //onRequestClose={() => {Alert.alert("Modal has been closed.");}}
                     >
-                        <View style={{flex:1, justifyContent:'flex-end',alignItems:'center', marginTop:20}}>
-                            
-            <View style={{ width:'100%',height:'45%',backgroundColor: "#FFFFFF",borderRadius: 20,paddingTop:20, paddingLeft:20}}>
-            <View style={{marginLeft:Dimensions.get('window').width/2+130, marginTop:0}}>
+                        <View style={{flex:1, justifyContent:'flex-end',alignItems:'center', marginTop:20,}}>
+                   <BlurView blurType='dark'>       
+                <View  elevation={15} style={{ width:'100%',height:Dimensions.get('window').height/2-20,backgroundColor: "#FFFFFF",borderRadius: 20,paddingTop:20, paddingLeft:20}}>
+                <View style={{marginLeft:Dimensions.get('window').width/2+150, marginTop:0}}>
                                 <TouchableOpacity onPress={() => {this.setModalVisible(!modalVisible);}}>
                                 <Text>X</Text>
                                 </TouchableOpacity>
@@ -190,31 +290,129 @@ export default class Dc extends React.Component {
               <Text style={{ marginBottom: 10,fontWeight:'bold', fontSize:10}}>Select the cards</Text>
                 <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps='always'>
                     <View>
-                <View style={{height:36,width:'95%',marginBottom:10,backgroundColor:"#74D3AE", opacity:0.2, alignItems:'center'}}>
-                <View style={{flexDirection:'row', marginLeft:-5, alignItems:'center'}}>
+                <View style={{height:72,width:375,marginBottom:10, alignItems:'center',borderColor:'#DDDDDD', borderWidth:1, borderRadius:5}}>
+                <View style={{flexDirection:'row', marginLeft:-15, alignItems:'center'}}>
                 <CheckBox
+                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
                 //onChange={() => this.setState({checked:!checked})}
                 onChange={() => this.setState({countchecked:countchecked+1})}
                 />
-                <Text style={{marginRight:5,fontFamily:'Roboto',marginLeft:-5}}>
-                    HDFC Bank card 
+                <Text style={{fontSize:12,fontFamily:'Nunito',marginLeft:0,fontWeight:'bold'}}>
+                    HDFC card 
                 </Text>
-                <View style={{width:'30%',marginTop:5,marginRight:5, borderWidth:1,height:26, backgroundColor:'#FFA07A', borderRadius:5}}>
-                    <Text style={{textAlign:'center', color:'#000000'}}>
-                        card info
+                <View style={{width:'30%',marginRight:5,height:26, backgroundColor:'rgba(0,0,0,0.08)',justifyContent:'center', marginLeft:30}}>
+                    <Text style={{fontSize:10,textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        xxxxxxxxxxxx1234
                     </Text>
                 </View>
-                <View style={{width:'25%',marginTop:5, borderWidth:1, height:26, backgroundColor:'#B3D6FA', borderRadius:5}}>
-                    <Text style={{textAlign:'center', color:'#000000'}}>
-                        amount
+                <View style={{width:120, height:26, backgroundColor:'rgba(0,0,0,0.08)', justifyContent:'center'}}>
+                    <View style={{flexDirection:'row', justifyContent:'center',alignItems:'center'}}> 
+                    <Text style={{fontSize:12,textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        Amount: {'\u20B9'}
+                    </Text>
+                    <TextInput placeholder=' '  keyboardType='numeric' //value={37000} 
+                    placeholderTextColor = "#000000" style={{flex:1,marginTop:0,height:26,width:'95%', color:'#000000', fontFamily:'Nunito',fontSize:10, fontWeight:'bold'}}
+                    onChangetext={(amount1) => this.setState(amount1)}
+                    />
+                    </View>
+                </View>
+                </View>
+                <View style={{flexDirection:'row'}}>
+                <View style={{justifyContent:'center', marginLeft:180}}>
+                    <Text style={{textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        Other:{"  "}
+                    </Text>
+                </View>
+                <View style={{width:120,marginTop:5, height:26, backgroundColor:'rgba(0,0,0,0.08)', }}>
+                   <View style={{flexDirection:'row', justifyContent:'center',alignItems:'center'}}>
+                    <Text style={{marginLeft:15, color:'#000000',fontWeight:'bold'}}>
+                    {'\u20B9'}
+                    </Text>
+                    <TextInput placeholder=' '  keyboardType='numeric'
+                    placeholderTextColor = "#000000" style={{flex:1,marginTop:0,height:26,width:'95%', color:'#000000', fontFamily:'Nunito',}}
+                    onChangeText={(text) => {this.onChanged(text)}}
+                    />
+                    </View>
+                </View>
+                </View>
+                </View>
+
+                <View style={{height:72,width:375,marginBottom:10, alignItems:'center',borderColor:'#DDDDDD', borderWidth:1, borderRadius:5}}>
+                <View style={{flexDirection:'row', marginLeft:-15, alignItems:'center'}}>
+                <CheckBox
+                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+                //onChange={() => this.setState({checked:!checked})}
+                onChange={() => this.setState({countchecked:countchecked+1})}
+                />
+                <Text style={{fontSize:12,fontFamily:'Nunito',marginLeft:0,fontWeight:'bold'}}>
+                    HDFC card 
+                </Text>
+                <View style={{width:'30%',marginRight:5,height:26, backgroundColor:'rgba(0,0,0,0.08)',justifyContent:'center', marginLeft:30}}>
+                    <Text style={{fontSize:10,textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        xxxxxxxxxxxx1234
+                    </Text>
+                </View>
+                <View style={{width:120, height:26, backgroundColor:'rgba(0,0,0,0.08)', justifyContent:'center'}}>
+                    <Text style={{fontSize:12,textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        Amount: {'\u20B9'}37,000
                     </Text>
                 </View>
                 </View>
-                
+                <View style={{flexDirection:'row'}}>
+                <View style={{justifyContent:'center', marginLeft:180}}>
+                    <Text style={{textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        Other:{"  "}
+                    </Text>
                 </View>
-                <View style={{height:36,width:'95%',marginBottom:10,backgroundColor:"#74D3AE", opacity:0.2, alignItems:'center'}}>
+                <View style={{width:120,marginTop:5, height:26, backgroundColor:'rgba(0,0,0,0.08)', }}>
+                    <Text style={{textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                    {'\u20B9'}37,000
+                    </Text>
+                </View>
+                </View>
+                </View>
+
+                <View style={{height:72,width:375,marginBottom:10, alignItems:'center',borderColor:'#DDDDDD', borderWidth:1, borderRadius:5}}>
+                <View style={{flexDirection:'row', marginLeft:-15, alignItems:'center'}}>
+                <CheckBox
+                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+                //onChange={() => this.setState({checked:!checked})}
+                onChange={() => this.setState({countchecked:countchecked+1})}
+                />
+                <Text style={{fontSize:12,fontFamily:'Nunito',marginLeft:0,fontWeight:'bold'}}>
+                    HDFC card 
+                </Text>
+                <View style={{width:'30%',marginRight:5,height:26, backgroundColor:'rgba(0,0,0,0.08)',justifyContent:'center', marginLeft:30}}>
+                    <Text style={{fontSize:10,textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        xxxxxxxxxxxx1234
+                    </Text>
+                </View>
+                <View style={{width:120, height:26, backgroundColor:'rgba(0,0,0,0.08)', justifyContent:'center'}}>
+                    <Text style={{fontSize:12,textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        Amount: {'\u20B9'}37,000
+                    </Text>
+                </View>
+                </View>
+                <View style={{flexDirection:'row'}}>
+                <View style={{justifyContent:'center', marginLeft:180}}>
+                    <Text style={{textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                        Other:{"  "}
+                    </Text>
+                </View>
+                <View style={{width:120,marginTop:5, height:26, backgroundColor:'rgba(0,0,0,0.08)', }}>
+                    <Text style={{textAlign:'center', color:'#000000',fontWeight:'bold'}}>
+                    {'\u20B9'}37,000
+                    </Text>
+                </View>
+                </View>
+                </View>
+
+
+
+               {/*<View style={{height:36,width:'95%',marginBottom:10,backgroundColor:"#ffffff", opacity:0.2, alignItems:'center'}}>
                 <View style={{flexDirection:'row', marginLeft:-5, alignItems:'center'}}>
                 <CheckBox
+                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
                 //onChange={() => this.setState({checked:!checked})}
                 onChange={() => this.setState({countchecked:countchecked+1})}
                 />
@@ -236,6 +434,7 @@ export default class Dc extends React.Component {
                 <View style={{height:36,width:'95%',marginBottom:10,backgroundColor:"#74D3AE", opacity:0.2, alignItems:'center'}}>
                 <View style={{flexDirection:'row', marginLeft:-5, alignItems:'center'}}>
                 <CheckBox
+                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
                 onChange={() => this.setState({countchecked:countchecked+1})}
                 />
                 <Text style={{marginRight:5,fontFamily:'Roboto',marginLeft:-5}}>
@@ -257,6 +456,7 @@ export default class Dc extends React.Component {
                 <View style={{height:36,width:'95%',backgroundColor:"#74D3AE", opacity:0.2, alignItems:'center'}}>
                 <View style={{flexDirection:'row', marginLeft:-5, alignItems:'center'}}>
                 <CheckBox
+                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
                 //onChange={() => this.setState({checked:!checked})}
                 onChange={() => this.setState({countchecked:countchecked+1})}
                 />
@@ -274,7 +474,7 @@ export default class Dc extends React.Component {
                     </Text>
                 </View>
                 </View>
-                </View>
+                </View>*/}
                 </View>
                 </ScrollView>
                 {this.state.countchecked.length>3? 
@@ -297,6 +497,7 @@ export default class Dc extends React.Component {
               </TouchableOpacity>
               }
             </View>
+            </BlurView>  
           </View>
                     </Modal>
                 </View>
@@ -370,11 +571,14 @@ export default class Dc extends React.Component {
             />
 
             <View style={{alignItems:'center'}}>  
-                <Text style={{paddingBottom:5}}>
-                    You have selected a Debt consolidation at 
+            <View>
+                <Text style={{paddingBottom:5, fontWeight:'bold'}}>
+                    You will payback total {'\u20B9'}70,999
                 </Text>
-                <Text>
-                    an interest rate of {'\u20B9'}5 for a thousand per day.(APR 2.5%)
+
+                </View>
+                <Text style={{fontWeight:'bold'}}>
+                    in 8 EMI's of {'\u20B9'}8,875
                 </Text>
             </View>
             <View style={{flexDirection:'row', justifyContent:'center', marginTop:20}}>
@@ -385,12 +589,12 @@ export default class Dc extends React.Component {
             <Text style={{marginTop:5, fontWeight:'bold', color:'#61C261',textDecorationLine: 'underline'}}>Legal agreements</Text>
             </View>
             <View style={{alignItems:'center', marginTop:20}}>
-            <TouchableOpacity style={{marginRight:20,width:'70%',borderWidth:1,height:35,borderRadius:5,backgroundColor:'#2A9134',opacity:0.5,marginBottom:20}}
+            <TouchableOpacity style={{marginRight:20,width:'70%',height:35,borderRadius:5,backgroundColor:'#2A9134',opacity:0.5,marginBottom:20}}
             disabled={!checked}
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
-            onPress={() => this.props.navigation.navigate('pl')}
+            //onPress={() => this.props.navigation.navigate('pl')}
         >
-            <Text style={{textAlign:'center',paddingTop:7}}>
+            <Text style={{textAlign:'center',paddingTop:7, color:'#ffffff'}}>
                 Get now & I wanna be debt free
             </Text>
         </TouchableOpacity>

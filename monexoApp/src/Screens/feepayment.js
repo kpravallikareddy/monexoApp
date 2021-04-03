@@ -7,6 +7,8 @@ import { Linking } from "react-native";
 import uuid from 'react-native-uuid';
 //import { v1 as uuidv1 } from 'uuid';
 import date from 'date-and-time';
+import ToggleSwitch from 'toggle-switch-react-native'
+import { ScrollView } from "react-native-gesture-handler";
 
 //var jwt = require('jwt-simple');
 
@@ -53,11 +55,18 @@ export default class Feepayment extends React.Component {
             creditstatus:'',
             checkstatus:false,
             jwttoken:'',
+            plan:'Freedom',
+            isOnDefaultToggleSwitch:true,
             
             //modelHeight:Dimensions.get('window').height/2-10,
         }
         //this.onSubmit = this.onSubmit.bind(this);
     }
+
+    onToggle(isOn) {
+        console.log("Changed to " + isOn);
+      }
+
 
     renderImage =() => {
         var imgSource = this.state.showCircleImg?circle:check_circle; 
@@ -154,14 +163,14 @@ export default class Feepayment extends React.Component {
         body:
           JSON.stringify(
               {
-            appid: '12345',
-            customerid:'',
-            status:this.state.status,
-            success:this.state.success,
-            platformBillID:this.state.platformBillID,
-            jsonresponse:this.state.paymentlinkresponse,
-            status:this.state.status,
-            success:this.state.success
+            "appid": '12345',
+            'customerid':'',
+            "status":this.state.status,
+            "success":this.state.success,
+            "platformBillID":this.state.platformBillID,
+            "jsonresponse":this.state.paymentlinkresponse,
+            "status":this.state.status,
+            "success":this.state.success
           }
           )
       }).then((response) =>response.json())
@@ -210,16 +219,16 @@ export default class Feepayment extends React.Component {
         body:
           JSON.stringify(
               {
-            appid: '12345',
-            customerid:'',
-            name:this.state.name,
-            platformBillID:this.state.platformBillID,
-            receiptdate:this.state.receiptdate,
-            receiptid:this.state.receiptid,
-            jsonresponse:this.state.paymentstatusresponse,
-            creditstatus:this.state.creditstatus,
-            status:this.state.status,
-            success:this.state.success
+            "appid": '12345',
+            "customerid":'',
+            "name":this.state.name,
+            "platformBillID":this.state.platformBillID,
+            "receiptdate":this.state.receiptdate,
+            "receiptid":this.state.receiptid,
+            "jsonresponse":this.state.paymentstatusresponse,
+            "creditstatus":this.state.creditstatus,
+            "status":this.state.status,
+            "success":this.state.success
           }
           )
       }).then((response) =>response.json())
@@ -243,7 +252,118 @@ export default class Feepayment extends React.Component {
 
     handleOnPress = () => this.setState({checked: false})
 
-   
+    // dynamic plan value getting from api
+    renderSwitch(plan) {
+        switch(this.state.plan) {
+            case 'Freedom':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#C7E4FF', alignItems:'center',justifyContent:'center',borderRadius:5,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#001931'}}>Freedom</Text>
+                    </View>)
+            case 'Smart':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#FFD4C7', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#320C00'}}>Smart</Text>
+                    </View>)
+            case 'Grand':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#E8E266', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#323000'}}>Grand</Text>
+                    </View>)
+            case 'Elite':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#00B488', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#E8FFF9'}}>Elite</Text>
+                    </View>)
+            case 'Diamond':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#262626', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#E2E2E2'}}>Diamond</Text>
+                    </View>)
+        }
+    }
+
+
+    renderMonthlytext(plan) {
+        switch(this.state.plan) {
+            case 'Freedom':
+                return ( <View>
+                    <View style={{marginLeft:20, marginTop:10}}>
+                    <Text style={{fontFamily:'Nunito', fontWeight:'bold',fontSize:24, lineHeight:32}}>{'\u20B9'} 69 / Month</Text>
+                </View>
+                <View style={{marginLeft:20, marginTop:5}}>
+                    <Text style={{fontWeight:'bold', fontSize:12}}>Paid Monthly</Text>
+                </View>
+                <View style={{marginLeft:20, marginTop:5, marginBottom:20}}>
+                    <Text style={{fontSize:12,color:'#888888'}}>Total {'\u20B9'} 829.00 /Year</Text>
+                </View>
+
+                <View style={{borderColor:'rgba(0,0,0,1)', borderWidth:0.5,}}>
+                
+                <View style={{flexDirection:'row',marginLeft:20, marginTop:10}}>
+                    <Text style={{fontSize:14, lineHeight:21}}>
+                        Credit line up to {'\u20B9'}5,000
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text style={{fontSize:14, lineHeight:21}}>
+                    Interest is as low as {'\u20B9'}0.99 / {'\u20B9'}1000 / day (APR 36%)
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text>
+                    Personal Financial Management
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text>
+                    Monthly credit score
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text>
+                    Bill payments
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text>
+                    Weekly Quiz and Games
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10,marginBottom:10}}>
+                    <Text>
+                    Upgrades - Coming soon ...
+                    </Text>
+                </View>
+                </View>
+                </View>)
+            case 'Smart':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#FFD4C7', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#320C00'}}>Smart</Text>
+                    </View>)
+            case 'Grand':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#E8E266', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#323000'}}>Grand</Text>
+                    </View>)
+            case 'Elite':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#00B488', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#E8FFF9'}}>Elite</Text>
+                    </View>)
+            case 'Diamond':
+                return (
+                    <View style={{width:100,height:36,backgroundColor:'#262626', alignItems:'center',justifyContent:'center',borderRadius:3,borderWidth:0}}>
+                        <Text style={{fontFamily:'Nunito',fontSize:14,fontWeight:'bold',color:'#E2E2E2'}}>Diamond</Text>
+                    </View>)
+        }
+    }
+
+
+
+
+
       onChange = checkedValues => {
         this.setState(() => {
           return { countchecked: checkedValues };
@@ -264,10 +384,10 @@ export default class Feepayment extends React.Component {
                    <Text style={{fontSize: 18,paddingRight:20}}> X </Text>
                 </TouchableOpacity>
                 <Text style={{marginTop:0, fontSize: 18,fontWeight:'bold'}}>
-                Monexo fees payment
+                Monexo fee
                 </Text>
                 <TouchableOpacity style={{paddingLeft:0}}>
-                    <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:100}} />
+                    <Image source={require('../../assets/NoNotification.png')} style={{height:20,width:20, marginLeft:Dimensions.get('window').width/2-20}} />
                 </TouchableOpacity>
                 <TouchableOpacity>
                     <Image source={require('../../assets/threedot.png')} style={{height:10,width:20, paddingTop:20,marginLeft:20}} />
@@ -300,7 +420,7 @@ export default class Feepayment extends React.Component {
                 <Text style={{fontWeight:'bold', fontSize:18}}>
                     Complete the E-NACH
                 </Text>
-            </View>*/}
+            </View>
             <View style={{alignItems:'center', marginTop:20}}>
                 <Text style={{color:'#111111', fontSize:16, fontFamily:'Nunito', fontWeight:'bold'}}>
                     Monexo Annual Fees
@@ -308,8 +428,97 @@ export default class Feepayment extends React.Component {
             </View>
             <View style={{alignItems:'center', marginTop:30,}}>
             <Image source={require('../../assets/feepay.png')} style={{height:200,width:200, paddingTop:20,marginLeft:20}} />
+        </View>*/}
+            <ScrollView>
+            <View style={{marginBottom:20, justifyContent:'center', alignItems:'center'}}>
+                <Text>{this.renderSwitch()}</Text>
             </View>
-            <View style={{alignContent:'center', justifyContent:'center', flexDirection:'row'}}>
+
+            <View style={{justifyContent:'center',alignItems:'center', marginBottom:20}}>
+                <Text style={{fontWeight:'bold', marginBottom:5}}>Pay for what you use. Nothing extra. </Text>
+                <Text style={{fontStyle:'italic',color:'#888888'}}>"Don't mix friendship and money.</Text>
+                <Text style={{fontStyle:'italic',color:'#888888'}}>MONEXO is here for you"</Text>
+            </View>
+
+            <View style={{width:Dimensions.get('window').width, height:80, backgroundColor:'rgba(218,23,23,0.1)'}}>
+               <View style={{flexDirection:'row'}}>
+                <View style={{margin:20}}>
+                <Text style={{fontWeight:'bold',marginBottom:5}}>Pay Monthly</Text>
+                <Text style={{color:'#888888'}}>Turn off the toggle to pay annually</Text>
+                </View>
+                
+                <ToggleSwitch
+                    //isOn={true}
+                    onColor="green"
+                    offColor="red"
+                    //label="Example label"
+                    labelStyle={{ color: "black", fontWeight: "900" }}
+                    //size="large"
+                    onToggle={isOnDefaultToggleSwitch => {
+                        this.setState({ isOnDefaultToggleSwitch:!isOnDefaultToggleSwitch });
+                        //this.onToggle(isOnDefaultToggleSwitch);
+                        }}
+                    isOn={this.state.isOnDefaultToggleSwitch}
+                    
+                />
+
+                </View>
+            </View>
+
+            <View>
+            <Text>{this.renderMonthlytext()}</Text>
+            </View>
+
+                {/*<View style={{marginLeft:20, marginTop:10}}>
+                    <Text style={{fontFamily:'Nunito', fontWeight:'bold',fontSize:24, lineHeight:32}}>{'\u20B9'} 69 / Month</Text>
+                </View>
+                <View style={{marginLeft:20, marginTop:5}}>
+                    <Text style={{fontWeight:'bold', fontSize:12}}>Paid Monthly</Text>
+                </View>
+                <View style={{marginLeft:20, marginTop:5, marginBottom:20}}>
+                    <Text style={{fontSize:12,color:'#888888'}}>Total {'\u20B9'} 829.00 /Year</Text>
+                </View>
+
+                <View style={{borderColor:'rgba(0,0,0,1)', borderWidth:0.5,}}>
+                
+                <View style={{flexDirection:'row',marginLeft:20, marginTop:10}}>
+                    <Text style={{fontSize:14, lineHeight:21}}>
+                        Credit line up to {'\u20B9'}5,000
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text style={{fontSize:14, lineHeight:21}}>
+                    Interest is as low as {'\u20B9'}0.99 / {'\u20B9'}1000 / day (APR 36%)
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text>
+                    Personal Financial Management
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text>
+                    Monthly credit score
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text>
+                    Bill payments
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10}}>
+                    <Text>
+                    Weekly Quiz and Games
+                    </Text>
+                </View>
+                <View style={{flexDirection:'row',marginLeft:20,marginTop:10,marginBottom:10}}>
+                    <Text>
+                    Upgrades - Coming soon ...
+                    </Text>
+                </View>
+                    </View>*/}
+
+            {/*<View style={{alignContent:'center', justifyContent:'center', flexDirection:'row'}}>
                 <Text style={{marginTop:30, marginBottom:10, marginRight:4}}>
                     Activate your account by paying
                     </Text>
@@ -318,10 +527,10 @@ export default class Feepayment extends React.Component {
                     </Text>
                     {/*<Text style={{marginTop:30, marginBottom:10}}>
                     is set up now.
-                    </Text>*/}
-                </View>
+                    </Text>
+                </View>*/}
                 {this.state.showupiapps == false ?
-                <View style={{ width:'30%',borderRadius:5, marginTop:5, backgroundColor:'#2A9134', alignSelf:'center'}}>
+                <View style={{ width:'30%',borderRadius:5, marginTop:15, backgroundColor:'#2A9134', alignSelf:'center',marginLeft:Dimensions.get('window').width/2+50, marginBottom:20}}>
                     <TouchableOpacity 
                     //disabled={this.state.ButtonStateHolder}
                     onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
@@ -357,6 +566,7 @@ export default class Feepayment extends React.Component {
                     </TouchableOpacity>
                 </View>
                 }   
+                </ScrollView>
             </View>
             </View>
           

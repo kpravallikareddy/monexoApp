@@ -25,6 +25,8 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import AppContainer from './src/index';
+import { AsyncStorage } from 'react-native';
+import firebase from 'react-native-firebase';
 
 const App: () => React$Node = () => {
   return (

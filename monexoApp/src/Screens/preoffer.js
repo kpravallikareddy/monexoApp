@@ -52,14 +52,14 @@ export default class Preoffer extends React.Component {
         body:
           JSON.stringify(
               {
-            appid: '12345',
-            customerid:this.state.customerid,
-            cl_amount:this.state.pl_amount,
-            minimum:this.state.minimum,
-            maximum:this.state.maximum,
-            finalvalue:this.state.selected_cl,
-            interest_rate:this.state.interest_rate,
-            terms_accepted:this.state.terms_accepted,
+            "appid": '12345',
+            "customerid":this.state.customerid,
+            "cl_amount":this.state.pl_amount,
+            "minimum":this.state.minimum,
+            "maximum":this.state.maximum,
+            "finalvalue":this.state.selected_cl,
+            "interest_rate":this.state.interest_rate,
+            "terms_accepted":this.state.terms_accepted,
           }
           )
       }).then((response) =>response.json())
@@ -83,9 +83,9 @@ export default class Preoffer extends React.Component {
         body:
           JSON.stringify(
               {
-            appid: '12345',
-            customerid:this.state.customerid,
-            selected_cl:this.state.selected_cl,
+            "appid": '12345',
+            "customerid":this.state.customerid,
+            "selected_cl":this.state.selected_cl,
           }
           )
       }).then((response) =>response.json())

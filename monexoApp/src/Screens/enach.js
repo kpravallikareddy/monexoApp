@@ -1,10 +1,33 @@
 import { NativeAppEventEmitter } from "react-native";
 import React from 'react';
-import {View, Text,TouchableOpacity, Image, Dimensions, CheckBox} from 'react-native';
+import {View, ScrollView, Text,TouchableOpacity, Image, Dimensions, CheckBox} from 'react-native';
 import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
+import { Linking } from "react-native";
+import { WebView } from 'react-native-webview';
 
 const { height, width } = Dimensions.get('window')
+
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+//const callback = 'https://uat-newapi.monexo.co/bank_transactions_finbit/'
+
+//injectedJavaScript={INJECTED_JAVASCRIPT}
+const INJECTED_JAVASCRIPT = `(function() {
+    if (window.addEventListener) {
+        window.addEventListener("message", handlePostMessage, false);
+    } else {
+        window.attachEvent("onmessage", handlePostMessage);
+    }
+ 
+    function handlePostMessage(obj) {
+        if (obj.data && obj.data != null && obj.data != "") {
+            console.log(obj.data);
+            window.ReactNativeWebView.postMessage(JSON.stringify(obj.data));
+        }
+    }
+})();`;
+
 export default class Enach extends React.Component {
     
     constructor(props){
@@ -13,9 +36,13 @@ export default class Enach extends React.Component {
             showCircleImg:true,
             termsAccepted: false,
             checked: false,
-            ButtonStateHolder:true
-            
-            //modelHeight:Dimensions.get('window').height/2-10,
+            ButtonStateHolder:true,
+            status:'',
+            url:'',
+            webviewvisible:false,
+           // webview:null,
+            sourceid:'',
+            //webviewRef: null,
         }
         //this.onSubmit = this.onSubmit.bind(this);
     }
@@ -29,52 +56,108 @@ export default class Enach extends React.Component {
         );
     }
     
-    //lotuspay api integration
+    onMessage = event => {
+        const { data } = event.nativeEvent;
+        this.setState({ data });
+        console.log('data:',data)
+      };
 
-    fetchData = () => {
-        console.log('test');
-        //fetch('https://api.lotuspay.com/v1/nach_banks?filter=variant_api')
-          fetch('https://api-test.lotuspay.com/v1/sources/')
-            .then((response) => response.json())
-            .then((responseJson) => {
-               console.log('response:', responseJson);
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-    };
+      netbank = async () => {
+        // console.log('test');
+         this.setState({webviewvisible:true});
+     }
+    
+    // lotuspay source api integration    //+sk_test_GzAdSyss7OZ9dbhvZibmP5TA
+    //'Basic c2tfdGVzdF9HekFkU3lzczdPWjlkYmh2WmlibVA1VEE6',
 
     fetchSource = () => {
          console.log('source');
 
-         fetch('https://api-test.lotuspay.com/v1/sources/', //+sk_test_GzAdSyss7OZ9dbhvZibmP5TA,
+         fetch('https://api-test.lotuspay.com/v1/sources/', 
        {
          method:'POST',
          headers:{
-            'Authorization': 'Bearer sk_test_GzAdSyss7OZ9dbhvZibmP5TA',
+            'Authorization': 'Basic c2tfdGVzdF9HekFkU3lzczdPWjlkYmh2WmlibVA1VEE6',
             'Content-Type': 'application/json',
           },
          body:JSON.stringify({"type":"nach_debit",
                                 "nach_debit":{"amount_maximum":10000,
                                 //"date_first_collection":"2020-01-01",
-                                "debtor_agent_code":"ICIC",
-                                "debtor_account_name":"AMIT JAIN",
-                                "debtor_account_number":"326949",
+                                "creditor_agent_code":"IDFB",
+                               // "creditor_agent_name":"IDFB BANK",
+                                //"creditor_agent_mmbid":"IDFB0000001",
+                                "creditor_utility_code":"NACH00000000003241",
+                                "debtor_agent_code":"SBIN",
+                                "debtor_account_name":"PRAVALLIKA K",
+                                "debtor_account_number":"32697282948",
                                 "debtor_account_type":"savings",
+                                "debtor_email":"kpravallikareddy89@gmail.com",
+                                "debtor_mobile":"7995351713",
+                                //"debtor_pan":"DUHPK1756B",
                                 "frequency":"MNTH"},
-                                //"redirect":{"return_url":"https://www.lotuspay.com/"},
-                                "reference1":"CU0011AABBCC22"}
-                        ),
-       }).then((response) =>response)
+                               // "redirect":{"return_url":"https://test.lotuspay.com/" }, 
+                             }),
+       }).then((response) =>response.json())
          .then((responseJson) =>{
          console.log('response:',responseJson)
-         
+         console.log('status:', JSON.stringify(responseJson.status))
+         console.log('mandate url',responseJson.redirect.short_url)
+         this.setState({
+            url:responseJson.redirect.short_url,
+            // url:responseJson.redirect.url,
+            // sourceid:responseJson.id,
+            // webviewvisible:false
+            })
          }).catch((error) =>
          {
            console.error(error);
          });
        }
+
+       onClickUrl = () => {
+           Linking.openURL(this.state.url)
+       }
+
+       checkSourceStatus = async () => {
+        console.log('check source status');
+        
+        await delay(100000);
      
+        fetch('https://api-test.lotuspay.com/v1/sources/'+this.state.sourceid, 
+        {
+          method:'GET',
+          headers:{
+             'Authorization': 'Basic c2tfdGVzdF9HekFkU3lzczdPWjlkYmh2WmlibVA1VEE6',
+             'Content-Type': 'application/json',
+           },
+        }).then((response) =>response.json())
+          .then((responseJson) =>{
+          console.log('response:',responseJson)
+          }).catch((error) =>
+          {
+            console.error(error);
+          });
+        
+       }
+
+       renderContent() {
+           return (
+            <WebView
+            source={{ uri: this.state.url}}
+            //style={{ flex: 1, height:500, width:Dimensions.get('window').width }}
+            />
+           );
+       }
+
+
+
+       handleWebViewNavigationStateChange = newNavState => {
+        if (this.state.url.includes('?status=SUCCESS')) {
+           // this.webview.stopLoading();
+           this.setState({webviewvisible:false})
+            // maybe close this view?
+          }
+        }
 
     handleOnPress = () => this.setState({checked: false})
 
@@ -89,10 +172,25 @@ export default class Enach extends React.Component {
     
         render(){
             const thumbImage = require('../../assets/Slider.png');
-            const {checked, modalVisible, countchecked} = this.state;
+            const {checked, modalVisible, countchecked,webviewvisible} = this.state;
         return (
+           
+              
+            webviewvisible == true ?
+                
+           
+                this.renderContent()
+            
+            /*<WebView
+               
+            source={{ uri: this.state.url}}
+            style={{ flex: 1, height:Dimensions.get('window').height, width:Dimensions.get('window').width }}
+            />*/
+          
+            :
             <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
                 <View style={{flex:1}}>
+
             <View style={{flexDirection:'row',backgroundColor:'#FFFFFF', paddingLeft:15, paddingTop:20,marginBottom:10}}>
                 <TouchableOpacity> 
                    
@@ -131,6 +229,7 @@ export default class Enach extends React.Component {
         </View>
         </View>
         </View>
+
             <View style={{alignItems:'center', marginTop:0,}}>
                 <Text style={{fontWeight:'bold', fontSize:18}}>
                     Complete the E-NACH
@@ -139,6 +238,8 @@ export default class Enach extends React.Component {
             <View style={{alignItems:'center', marginTop:30,}}>
             <Image source={require('../../assets/enach.png')} style={{height:200,width:200, paddingTop:0,marginLeft:20}} />
             </View>
+
+            
             <View style={{marginLeft:20,}}>
                 <Text style={{marginTop:30, marginBottom:10}}>
                     Select your EMI date of a month
@@ -146,7 +247,8 @@ export default class Enach extends React.Component {
                 <View style={{flexDirection:'row'}}>
                 <View style={{ width:'20%',marginRight:15, alignItems:'center'}}>
                             <TouchableOpacity style={{height:30,width:'100%',alignItems:'center',backgroundColor:this.state.selectedButton === '1' ? '#2A9134':'#ffffff',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
-                            onPress={() => this.setState({selectedButton:'1', ButtonStateHolder : false,})}
+                            //onPress={() => this.setState({selectedButton:'1', ButtonStateHolder : false})}
+                            onPress ={() => this.fetchSource()}
                             >
                             <Text>
                                 1
@@ -155,7 +257,8 @@ export default class Enach extends React.Component {
                 </View>
                 <View style={{ width:'20%',marginRight:15, alignItems:'center'}}>
                             <TouchableOpacity style={{height:30,width:'100%',alignItems:'center',backgroundColor:this.state.selectedButton === '3' ? '#2A9134':'#ffffff',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
-                            onPress={() => this.setState({selectedButton:'3', ButtonStateHolder : false,})}
+                           // onPress={() => this.setState({selectedButton:'3', ButtonStateHolder : false,})}
+                            onPress ={() => this.fetchSource()}
                             >
                             <Text>
                                 3
@@ -164,7 +267,8 @@ export default class Enach extends React.Component {
                 </View>
                 <View style={{ width:'20%', marginRight:15,alignItems:'center'}}>
                             <TouchableOpacity style={{height:30,width:'100%',alignItems:'center',backgroundColor:this.state.selectedButton === '5' ? '#2A9134':'#ffffff',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
-                            onPress={() => this.setState({selectedButton:'5', ButtonStateHolder : false,})}
+                            //onPress={() => this.setState({selectedButton:'5', ButtonStateHolder : false,})}
+                            onPress ={() => this.fetchSource()}
                             >
                             <Text>
                                 5
@@ -173,7 +277,8 @@ export default class Enach extends React.Component {
                 </View>
                 <View style={{ width:'20%', alignItems:'center'}}>
                             <TouchableOpacity style={{height:30,width:'100%',alignItems:'center',backgroundColor:this.state.selectedButton === '7' ? '#2A9134':'#ffffff',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
-                            onPress={() => this.setState({selectedButton:'7', ButtonStateHolder : false,})}
+                           // onPress={() => this.setState({selectedButton:'7', ButtonStateHolder : false,})}
+                            onPress ={() => this.fetchSource()}
                             >
                             <Text>
                                 7
@@ -183,10 +288,11 @@ export default class Enach extends React.Component {
                 </View>
                 <View style={{ width:'95%',borderRadius:5, alignItems:'center', marginTop:30, backgroundColor: this.state.ButtonStateHolder ? 'rgba(42,145,52,0.5)':'#2A9134'}}>
                     <TouchableOpacity 
-                    disabled={this.state.ButtonStateHolder}
-                    onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
+                   // disabled={this.state.ButtonStateHolder}
+                    onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg, webviewvisible:true})}
                    // onPress={() => this.props.navigation.navigate('vkyc')}
-                   onPress ={() => this.fetchSource()}
+                  // onPress ={() => {this.onClickUrl(); }}  //this.checkSourceStatus()
+                  
                     style={{height:30,width:'100%',alignItems:'center',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
                     >
                         <Text style={{color:'#ffffff'}}>Proceed to E-NACH</Text>
@@ -195,6 +301,8 @@ export default class Enach extends React.Component {
             </View>
             </View>
             </View>
+            
+            
         );
     }
 }
