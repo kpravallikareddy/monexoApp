@@ -10,6 +10,8 @@ import React, { Component } from 'react';
 import { PermissionsAndroid, Image,Alert, TouchableOpacity,TouchableHighlight, Modal,Platform,AppRegistry, View, Text, StyleSheet,TextInput, Button, NativeModules, Dimensions } from 'react-native';
 import moment from 'moment'; 
 import {Picker} from '@react-native-community/picker';
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP,READ_KYC,OCR_APPID,OCR_APPKEY,FACEMATCH } from '@env'
 //import {RNS3} from 'react-native-aws3';
 
 /*
@@ -26,8 +28,8 @@ The bellow line is used to ignore certain warnings
 //LogBox.ignoreAllLogs(['Module RCTImageLoader','Class RCTCxxModule']);
 
 //Please add the appId and appKey received from HyperVerge here.
-const appID = "244af5";
-const appKey= "3c4bc3d5cba35cbb9176";
+const appID = OCR_APPID;
+const appKey= OCR_APPKEY;
 
 var currentDate = moment().format("DD/MM/YYYY");
 var initSuccess=false;
@@ -109,7 +111,7 @@ export default class Ocr extends React.Component {
 
 
     insert_adhaardata_into_MySQL = () => {
-      fetch('http://127.0.0.1:8000/api/ocr/',
+      fetch(BASE_URL_PYTHON+'/kyc',
       {
         method:'POST',
         headers:{
@@ -121,7 +123,7 @@ export default class Ocr extends React.Component {
         body:
           {
             "appid": this.state.appid,
-           // customerid:this.state.customerid,
+            "customerid":this.state.customerid,
             "name":this.state.name,
             "aadhaar":this.state.aadhaar_number,
             "father":this.state.father,
@@ -145,7 +147,7 @@ export default class Ocr extends React.Component {
 
 
     insert_facecapturedata_into_MySQL = () => {
-      fetch('http://127.0.0.1:8000/api/ocr/',
+      fetch(BASE_URL_PYTHON+'/facematch',
       {
         method:'POST',
         headers:{
@@ -157,7 +159,7 @@ export default class Ocr extends React.Component {
         body:
           {
             "appid": this.state.appid,
-           // customerid:this.state.customerid,
+            "customerid":this.state.customerid,
             "base":'adhaar',
             "compare_with":'selfie',
             "conf":this.state.conf,
@@ -193,7 +195,7 @@ export default class Ocr extends React.Component {
     
     handleUploadPhoto = () => {
       //console.log(this.state.photo.fileName);
-      fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
+      fetch(BASE_URL_PHP+'/uploadDocument',
       {
         method:'POST',
         headers:{  
@@ -322,7 +324,7 @@ export default class Ocr extends React.Component {
                      this.printDictionary(result,"doc",true);
                    }
                  }
-                 RNHVNetworkHelper.makeOCRCall("https://ind-docs.hyperverge.co/v2.0/readKYC",docImageUri,params,headers,closure)
+                 RNHVNetworkHelper.makeOCRCall(READ_KYC,docImageUri,params,headers,closure)
                } catch(error){
                  console.log('error')
                }
@@ -412,7 +414,7 @@ export default class Ocr extends React.Component {
                      this.printDictionary(result,"doc",true);
                    }
                  }
-                 RNHVNetworkHelper.makeOCRCall("https://ind-docs.hyperverge.co/v2.0/readKYC",docImageUri1,params,headers,closure)
+                 RNHVNetworkHelper.makeOCRCall(READ_KYC,docImageUri1,params,headers,closure)
                } catch(error){
                  console.log('error')
                }
@@ -505,7 +507,7 @@ export default class Ocr extends React.Component {
                     //}
                   }
                 }
-                 RNHVNetworkHelper.makeFaceMatchCall("https://ind-faceid.hyperverge.co/v1/photo/verifyPair",imageUri,docImageUri,params,headers,closure)
+                 RNHVNetworkHelper.makeFaceMatchCall(FACEMATCH,imageUri,docImageUri,params,headers,closure)
               } catch(error){
                 console.log('error')
               }
@@ -578,6 +580,56 @@ export default class Ocr extends React.Component {
     onSubmit() {
         this.setState({checked:true})
     }
+
+
+    // decision
+creditDecision = () => {
+  // await delay(10000);
+   console.log('decision');
+ fetch(BASE_URL_PHP+'/creditDecision',
+ {
+   method:'POST',
+   headers:{
+    // Accept: 'application/json',
+     'Content-Type': 'application/json',
+   },
+   body:
+     JSON.stringify(
+         {
+       "application_id": this.state.appid,
+       "cust_id":this.state.customerid,
+     }
+     )
+ }).then((response) =>response.json())
+   .then((responseJson) =>{
+   console.log('response:',responseJson)
+   if(responseJson.Responsedata.status == "APP"){     //REF   //REJ
+     if(responseJson.Responsedata.product == "PL"){
+       this.props.navigation.navigate('pl')
+     } else if(responseJson.Responsedata.product == "DC"){
+       this.props.navigation.navigate('dc')
+     }
+   } else if (responseJson.Responsedata.status == "REF"){
+     this.props.navigation.navigate('refer')
+   } else {
+     this.props.navigation.navigate('rejected')
+   }
+ 
+   }).catch((error) =>
+   {
+     console.error(error);
+   });
+ }
+ 
+
+
+
+
+
+
+
+
+
 
     render(){
       const that = this;
@@ -789,7 +841,7 @@ export default class Ocr extends React.Component {
                   <View style={{ width:'30%',borderRadius:5, marginTop:20, backgroundColor:'#2A9134', alignSelf:'center'}}>
                   <TouchableOpacity style={{height:30,width:'100%',alignItems:'center',borderColor:'#2A9134',borderRadius:5, borderWidth:0.3,justifyContent:'center',}}
                   onPress={()=> {this.setState({showCircleImg:!this.state.showCircleImg, ocrcompleted:!this.state.ocrcompleted}) //}}
-                   this.props.navigation.navigate('personalinfo'), this.insert_adhaardata_into_MySQL(),this.insert_facecapturedata_into_MySQL()}}
+                   this.props.navigation.navigate('enach'), this.insert_adhaardata_into_MySQL(),this.insert_facecapturedata_into_MySQL()}}
                   >
                 <Text style={{textAlign:'center',color:'#ffffff'}}>
                 Submit

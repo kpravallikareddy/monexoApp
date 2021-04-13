@@ -1,4 +1,6 @@
 rootProject.name = 'monexoApp'
+include ':react-native-adgyde-sdk'
+project(':react-native-adgyde-sdk').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-adgyde-sdk/android')
 include ':react-native-image-picker'
 project(':react-native-image-picker').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-picker/android')
 include ':react-native-image-picker'

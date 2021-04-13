@@ -3,6 +3,8 @@ import React from 'react';
 import {View, Text,TouchableOpacity, Image, Dimensions, CheckBox} from 'react-native';
 import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 const { height, width } = Dimensions.get('window')
 export default class Withdrawal extends React.Component {

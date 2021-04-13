@@ -15,6 +15,10 @@ import DropDownPicker from "react-native-custom-dropdown";
 import moment from 'moment';
 //import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import { SelectMultipleButton, SelectMultipleGroupButton } from 'react-native-selectmultiple-button'
+import AdgydeSdk from 'react-native-adgyde-sdk';
+//import {TextField} from '@material-ui/TextField';
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
@@ -30,10 +34,6 @@ const validateForm = (errors) => {
   const genders = [ { id: 1, label: 'Male', value: 'M', }, {
     id: 2, label: 'Female', value: 'F', },]
 
-const professiontype=[
-    {id:1, title:'',data:[{label: 'Pvt Ltd', value: 'Pvt Ltd',}, {label:'LLP',value:'LLP'}, {label:'Public Ltd',value:'Public Ltd'}, {label:'Central Govt',value:'Central Govt'}, {label:'State Govt',value:'State Govt'}]},
-     {id:2, title:'',data:[{label:'Student',value:'Student'}]},
-     {id:3,title:'',data:[{label:'Self-Employed',value:'Self-Employed'}]}];
 
 
 export default class personalinfo extends React.Component{
@@ -48,7 +48,6 @@ export default class personalinfo extends React.Component{
             date:new Date(),
            // gender:['Male','Female'],
             gender:'',
-            professionvalue:'',
             fathername:'',
             pincode:'',
             locality:'',
@@ -68,8 +67,6 @@ export default class personalinfo extends React.Component{
             errorStatus: false,
             validEmail:false,
             checked:null,
-            profession:false,
-            data : ['Self-Employed','Student'],
             salariedselected:'',
             dropdownvisible:false,
             selection:null,
@@ -81,16 +78,42 @@ export default class personalinfo extends React.Component{
             adhaarnumber:0,
             firstnameStatus:false,
             hidelocalitysublocality:false,
-            studentnotselected:false,
-            student:'student',
-            latitude:'',
-            longitude:'',
-            profession_type:''
+           // studentnotselected:false,
+            latitude:0,
+            longitude:0,
+            profession_type:'',
+            utmsource:'',
+            campaignname:'',
+            campaignid:0,
+            channelname:'',
+            channelid:0,
+            isStudentSelected:false,
+            isSalariedSelected:false,
+            isSubSalariedItem:''
+
         };
         this.onSubmit = this.onSubmit.bind(this);
         this.fetchData = this.fetchData.bind(this);
         //this.handleChange = this.handleChange.bind(this)
     }
+
+    //Adgyde test
+
+    //AdGyde.getUserId = AdgydeSdk.getUserId;
+    //AdGyde.getchannelId = AdgydeSdk.getchannelId;
+    //AdGyde.getChannelName = AdgydeSdk.getChannelName;
+    //AdGyde.getCampaignName = AdgydeSdk.getCampaignName;
+    getutmdetails = () =>{
+    this.setState({
+        utmsource:AdGyde.getUtmSource,
+        campaignname:AdGyde.getCampaignName,
+        campaignid:AdGyde.getCampaignId,
+        channelname:AdGyde.getChannelName,
+        channelid:AdGyde.getChannelId
+    });
+    }
+
+
 
     EnableButtonFunction =()=>{
         this.setState({
@@ -141,11 +164,7 @@ export default class personalinfo extends React.Component{
           console.log("gender:",props);
       }
 
-      setProfession=(props) => {
-        this.setState({professionvalue:props})
-        console.log("profession:",props);
-    }
-
+      
     onChanged(text){
         let newText = '';
         let numbers = '0123456789';
@@ -176,6 +195,8 @@ export default class personalinfo extends React.Component{
             this.setState({validPan: false, errorStatus:true});
         }
     }
+
+
 
     onChangeEmail(email) {
         this.setState({email});
@@ -325,7 +346,7 @@ onChangeAddress(address){
 
    insertdata_into_db = async () => {
     console.log('test');
-   await fetch('http://10.0.2.2:8000/personalinformation/',
+   await fetch(BASE_URL_PYTHON+'/personalinformation',
   {
     method:'POST',
     headers:{
@@ -335,7 +356,7 @@ onChangeAddress(address){
     body:
       JSON.stringify(
           {
-        "appid": '12345',
+        "appid": this.state.appid,
        // fullname:this.state.fullname,
         "firstname":this.state.firstname,
         "lastname":this.state.lastname,
@@ -403,7 +424,7 @@ fetch("uat-newapioth.monexo.co/api/saleForceUpdateRecords", requestOptions)
 
 updateSalesforce = () => {
     console.log('salesforce');
-    fetch('http://uat-newapioth.monexo.co/api/saleForceUpdateRecords',
+    fetch(BASE_URL_PHP+'/saleForceUpdateRecords',
     {
         method:'POST',
         headers:{
@@ -465,7 +486,7 @@ updateSalesforce = () => {
 
     aufilldata_from_kyc = (appid) => {
         console.log('kyc');
-        fetch('http://10.0.2.2:8000/kyc'+this.state.appid)
+        fetch(BASE_URL_PYTHON+'/kyc'+this.state.appid)
             .then((response) => response.json())
             .then((responseJson) => {
                console.log(responseJson);
@@ -516,84 +537,132 @@ updateSalesforce = () => {
     };
 
 
-    fetchCity = (text) => {
-        console.log('geospoc-city');
-        fetch('http://127.0.0.1:8000/addressAutofill/getCity/'+text)
-            .then((response) => response.json())
-            .then((responseJson) => {
-               console.log(responseJson);
-                if(responseJson.message =='Data Fetched Successfully'){
-                    this.setState({city:responseJson.data.city})   //city:records[Object.keys(records)[0]].regionname
-               } else {
-                   this.fetchCitygovt(text);
-                   this.setState({hidelocalitysublocality:true})
-               }
-            })
-            .catch((error) => {
-                console.error(error);
+    fetchCity = () => {
+       // console.log(this.state.pincode);
+        fetch(BASE_URL_PYTHON+'/addressAutofill/getCity',
+        {
+            method:'POST',
+            headers:{
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body:
+              JSON.stringify({
+                "pincode":this.state.pincode
+              })
+          }).then((response) =>response.json())
+            .then((responseJson) =>{
+           // console.log(responseJson)
+          //  console.log("city",responseJson.data.city)
+            this.setState({city:responseJson.data.city})
+            }).catch((error) =>
+            {
+              console.error(error);
             });
     };
 
     fetchLocality = async () => {
         await delay(3000)
         console.log('geospoc-locality');
-        fetch('http://127.0.0.1:8000/addressAutofill/getLocalities/'+this.state.city+this.state.pincode)
-            .then((response) => response.json())
-            .then((responseJson) => {
-               console.log(responseJson);
-                //if(responseJson.status=='ok'){
-                //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-               //}
-            })
-            .catch((error) => {
-                console.error(error);
+        fetch(BASE_URL_PYTHON+'/addressAutofill/getLocalities',
+        {
+            method:'POST',
+            headers:{
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body:
+              JSON.stringify({
+                "city":this.state.city,
+                "pincode":this.state.pincode,
+              })
+          }).then((response) =>response.json())
+            .then((responseJson) =>{
+            //console.log(responseJson)
+           // console.log(responseJson.data.localities[0])
+            this.setState({locality:responseJson.data.localities[0]})
+            }).catch((error) =>
+            {
+              console.error(error);
             });
     };
 
     fetchSubLocality = async () => {
         await delay(5000)
-        console.log('geospoc-sublocality');
-        fetch('http://127.0.0.1:8000/addressAutofill/getSubLocalities/'+this.state.city+this.state.pincode+this.state.locality)
-            .then((response) => response.json())
-            .then((responseJson) => {
-               console.log(responseJson);
-                //if(responseJson.status=='ok'){
-                //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-               //}
-            })
-            .catch((error) => {
-                console.error(error);
+      //  console.log('geospoc-sublocality');
+        fetch(BASE_URL_PYTHON+'/addressAutofill/getSubLocalities',
+        {
+            method:'POST',
+            headers:{
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body:
+              JSON.stringify({
+                "city":this.state.city,
+                "pincode":this.state.pincode,
+                "locality":this.state.locality,
+              })
+          }).then((response) =>response.json())
+            .then((responseJson) =>{
+           // console.log(responseJson)
+           // console.log(responseJson.data.subLocalities[0])
+            this.setState({sublocality:responseJson.data.subLocalities[0]})
+            }).catch((error) =>
+            {
+              console.error(error);
             });
     };
 
     fetchLatLong = async () => {
         await delay(5000)
         console.log('geospoc-latlong');
-        fetch('http://127.0.0.1:8000/geocode'+this.state.address+this.state.city+this.state.pincode)
-            .then((response) => response.json())
-            .then((responseJson) => {
-               console.log(responseJson);
-                //if(responseJson.status=='ok'){
-                //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-               //}
-            })
-            .catch((error) => {
-                console.error(error);
+        fetch(BASE_URL_PYTHON+'/geocode',
+        {
+            method:'POST',
+            headers:{
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body:
+              JSON.stringify({
+                "address":this.state.address,
+                "city":this.state.city,
+                "pincode":this.state.pincode,
+              })
+          }).then((response) =>response.json())
+            .then((responseJson) =>{
+            console.log(responseJson)
+            console.log(responseJson.message.data.latitude)
+            console.log(responseJson.message.data.longitude)
+          //  this.setState({latitude:responseJson.message.data.latitude, 
+          //      longitude:responseJson.message.data.longitude})
+            }).catch((error) =>
+            {
+              console.error(error);
             });
     };
 
 
-    checkDrink(professionkey, object) {
-        var i;
-        for (i = 0; i < object.length; i++) {
-          if (object[i].isChecked === 'checked') {
-            object[i].isChecked = 'unchecked';
-          }
+    isStu_Sal=(value) => {
+        console.log('value',value)
+        if(value==="Sal"){
+            this.setState({
+                isSalariedSelected:true,
+                isStudentSelected:false
+            })
+        }else{
+            this.setState({
+                isSalariedSelected:false,
+                isStudentSelected:true,
+                profession_type:"Student"
+            })
         }
-        professionkey.isChecked = "checked";
-        //this.setState({ refresh: true });
-      }
 
+    } 
+
+
+    
     render(){
         const {city,state,locality,sublocality} = this.state;
         const {validPan,pannumber,validEmail, email,date} = this.state;
@@ -658,11 +727,17 @@ updateSalesforce = () => {
             </View>
             </View>*/}
 
+
+            
+
+
+
         <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:0,marginBottom:0, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Profile.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Firstname</HelperText>
             <TextInput placeholder=' ' autoCapitalize = 'words' value={this.state.firstname}
+            style={{textTransform:'capitalize'}}
            // onChangeText={(firstname) => {this.setState({firstname}); console.log('first:',this.state.firstname)}} //this.updateSalesforce()  // this.splitmethod();
            // onChangeText={(text) => {this.onChangeFirstName(text)}}
             //  onChangeText={(firstname) => this.onChangeFirstname(firstname)}
@@ -680,7 +755,8 @@ updateSalesforce = () => {
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Profile.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Lastname</HelperText>
-            <TextInput placeholder=' ' autoCapitalize = 'words' value={this.state.lastname}
+            <TextInput placeholder=' '  value={this.state.lastname}
+            style={{textTransform:'uppercase'}}
             //onChangeText={(lastname) => {this.setState({lastname}); console.log('last:',this.state.lastname);this.updateSalesforce()}} //this.updateSalesforce()
             onChangeText={this.onChangeLastname.bind(this)}
             placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-70,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
@@ -839,7 +915,7 @@ updateSalesforce = () => {
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Pin code</HelperText>
             <TextInput placeholder=' ' value={this.state.pincode}
             keyboardType='numeric' maxLength={6}
-            onChangeText={(text) => {this.onChanged(text); this.fetchData(text); this.fetchCity(text);this.fetchLocality();this.fetchSubLocality();}}
+            onChangeText={(text) => {this.onChanged(text); this.fetchData(text); this.fetchCity();this.fetchLocality();this.fetchSubLocality();}} //this.fetchLocality();this.fetchSubLocality();
             placeholderTextColor = "rgba(0,0,0,0.3)" style={{flex:1,marginTop: 10,marginLeft:-65,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
@@ -848,7 +924,7 @@ updateSalesforce = () => {
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Cityicon.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>City</HelperText>
-            <TextInput placeholder=' ' autoCapitalize = 'words' importantForAutoFill='yes' value={city}
+            <TextInput placeholder=' ' autoCapitalize = 'words' importantForAutoFill='yes' value={this.state.city}
             placeholderTextColor = "rgba(0,0,0,0.3)" style={{flex:1,marginTop: 10,marginLeft:-40,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             
@@ -859,7 +935,7 @@ updateSalesforce = () => {
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Stateicon.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>State</HelperText>
-            <TextInput placeholder=' ' autoCapitalize = 'words' importantForAutoFill='yes' value={state}
+            <TextInput placeholder=' ' autoCapitalize = 'words' importantForAutoFill='yes' value={this.state.state}
             placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-50,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             
@@ -871,7 +947,7 @@ updateSalesforce = () => {
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Localityicon.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Locality</HelperText>
-            <TextInput placeholder=' ' autoCapitalize = 'words' importantForAutoFill='yes' value={locality}//autoCapitalize = 'words' value={this.state.locality}
+            <TextInput placeholder=' ' autoCapitalize = 'words' importantForAutoFill='yes' value={this.state.locality}//autoCapitalize = 'words' value={this.state.locality}
            // onChangeText={(locality) => {this.setState({locality})}} 
             placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-60,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
@@ -881,7 +957,7 @@ updateSalesforce = () => {
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/Sublocalityicon.png')} style={{height:20,width:20,marginTop:15}} />
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Sublocality</HelperText>
-            <TextInput placeholder=' '  autoCapitalize = 'words' importantForAutoFill='yes' value={sublocality}  //autoCapitalize = 'words' value={this.state.sublocality}
+            <TextInput placeholder=' '  autoCapitalize = 'words' importantForAutoFill='yes' value={this.state.sublocality}  //autoCapitalize = 'words' value={this.state.sublocality}
            // onChangeText={(sublocality) => {this.setState({sublocality})}} 
             placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,marginLeft:-75,height:48,width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
@@ -903,52 +979,67 @@ updateSalesforce = () => {
         : null }
         <View style={{marginLeft:20,marginTop:15, marginRight:20, borderColor:'#2A9154'}}>
             <Text >Profession</Text> 
-                {this.state.profession == false ?
+                {/*{this.state.profession == false ?*/}
 
-                <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+                <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5,borderColor:this.state.isSalariedSelected ?'#2A9154':null,borderWidth:this.state.isSalariedSelected ?0.5:null}}>
+               
                 <TouchableOpacity 
-                onPress={() =>{this.setState({profession:true})}}
+                onPress={() =>this.isStu_Sal("Sal")}
                 style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
+                {!this.state.isSalariedSelected?
                     <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
+                    :
+                    <Image style={{ height:20, width:20, marginLeft:10}}source={require("../../assets/selected.png")}/>
+                }
+
                     <Text style={{marginLeft:10, }}>Salaried</Text>
                     <Image style={{marginLeft:Dimensions.get('window').width/2+20, height:30, width:30}}source={require("../../assets/downarrow.png")}/>
                 </TouchableOpacity>
-                </View> :
+                </View> 
+                {/*:
             <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
             <TouchableOpacity onPress={() =>{this.setState({dropdownvisible:true})}}
-            style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
+            styl}e={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
                     <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
                     <Text style={{marginLeft:10,marginTop:15}}>Salaried</Text>
                     <Image style={{marginLeft:Dimensions.get('window').width/2+20, height:30, width:30, marginTop:15}}source={require("../../assets/downarrow.png")}/>
             </TouchableOpacity>
-            </View>}
+                </View>}*/}
       
-            {this.state.dropdownvisible == true ?
-            this.state.salarieddata.map((salarieddata, key) => {
-        return (
-            <View key={key} style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
-            {this.state.salariedselected == key?
+            {this.state.isSalariedSelected ==true?
+            this.state.salarieddata.map((item,index) => {
+            return (
+            <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
+            {/*{this.state.salariedselected ?*/}
             <View >
-                <TouchableOpacity style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
-                    <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
-                    <Text style={{marginLeft:10,marginTop:15}}>{salarieddata}</Text>
+                <TouchableOpacity style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:this.state.isSubSalariedItem==index ?0.5:null, 
+                borderColor:this.state.isSubSalariedItem==index ?'#2A9154':null, height:56, width:'100%', marginLeft:0, borderRadius:5}}
+                
+                onPress={()=>{this.setState({isSubSalariedItem:index,profession_type:item})}}>
+                    {(this.state.isSubSalariedItem==index) ?
+                    <Image style={{ height:20, width:20, marginLeft:10, marginTop:15}}source={require("../../assets/selected.png")}/>
+                    :
+                    <Image style={{height:20,width:20,marginLeft:10, marginTop:15 }} source={require("../../assets/notselected.png")} />
+                    }
+                    <Text style={{marginLeft:10,marginTop:15}}>{item}</Text>
                     
                 </TouchableOpacity>
                 </View>
-                :
+                {/*:
                 <View>  
-                <TouchableOpacity onPress={()=>{this.setState({profession_type: value,ButtonStateHolder : false, visible:true})}} 
+                <TouchableOpacity 
+                //onPress={()=>{this.setState({ButtonStateHolder : false, visible:true})}} 
                 //onPress={()=>this.setProfession(value)}     // salarieddata.get(key) salari[key]
                //onPress={()=>console.log("profession:",this.state.salariedselected)}
                 
                 style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
                     <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
                     <Text style={{marginLeft:10, }}>{salarieddata}</Text>
-                    {/*<Image style={{marginLeft:190, height:30, width:30}}source={require("../../assets/downarrow.png")}/>*/}
+                    {/*<Image style={{marginLeft:190, height:30, width:30}}source={require("../../assets/downarrow.png")}/>
                 </TouchableOpacity>
-                </View>
-            }
-            </View>
+                </View>*/}
+            
+        </View>
         )
         }) :null}
 
@@ -964,19 +1055,24 @@ updateSalesforce = () => {
                 </View>
 
 
-                <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5}}>
-                {this.state.studentnotselected == false?
-                 <TouchableOpacity onPress={()=>{this.setState({ButtonStateHolder : false, visible:false,studentnotselected:true, profession_type:'student'})}}
+                <View style={{marginLeft:0,marginTop:15, marginRight:0,height:56, backgroundColor:'#EEEEEE',width:'100%', borderRadius:5,borderWidth:this.state.isStudentSelected?0.5:null,borderColor:this.state.isStudentSelected?'#2A9134':null}}>
+                {/*{this.state.studentnotselected == false?*/}
+                 <TouchableOpacity onPress={()=>this.isStu_Sal("Stu")}
+                 //onPress={()=>{this.setState({ButtonStateHolder : false, visible:false,studentnotselected:true, profession_type:'student'})}}
                  style={{flexDirection:'row', marginLeft:10,marginTop:15,}}>
+                     {!this.state.isStudentSelected ?
                      <Image style={{height:20,width:20, }} source={require("../../assets/notselected.png")} />
+                     :
+                     <Image style={{ height:20, width:20, marginLeft:10}}source={require("../../assets/selected.png")}/>
+                    }
                      <Text style={{marginLeft:10, }}>Student</Text> 
                  </TouchableOpacity>
-                :
+                {/*:
                 <TouchableOpacity style={{flexDirection:'row', marginLeft:10,marginTop:0,borderWidth:0.5, borderColor:'#2A9154', height:56, width:'100%', marginLeft:0, borderRadius:5}}>
                     <Image style={{ height:20, width:20,marginTop:15, marginLeft:10}}source={require("../../assets/selected.png")}/>
                     <Text style={{marginLeft:10,marginTop:15}}>Student</Text>
                 </TouchableOpacity>
-                }
+                }*/}
                 </View>
 
 
@@ -1170,7 +1266,7 @@ updateSalesforce = () => {
         </TouchableOpacity>
         </View>*/}
         </View>
-        {this.state.visible == true ?
+        {this.state.isSalariedSelected ?
         <View style={{height:48,borderBottomColor:'#000000',borderBottomWidth:0.5, margin:20,backgroundColor:'#EEEEEE',marginTop:15,marginBottom:10, borderRadiusTopLeft:10,borderRadiusTopRight:10}}>
             <View style={{flexDirection:'row',paddingLeft:5}}>
                 <Image source={require('../../assets/pan.png')} style={{height:20,width:20,marginTop:15}} />
@@ -1190,17 +1286,17 @@ updateSalesforce = () => {
         }
 
         <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder  ? 'rgba(42,145,52,0.3)':'#2A9134',marginBottom:20,}}
-           // disabled={this.state.ButtonStateHolder || 
-           //     this.state.firstname == '' || 
-           //     this.state.lastname || this.state.date == '' || this.state.fathername=='' || 
-           //     this.state.gender =='' || this.state.email=='' || this.state.adhaarnumber =='' || 
-           //     this.state.pincode=='' || this.state.city=='' || this.state.state ||
-           //     this.state.locality=='' || this.state.address==''
-           // }
+            disabled={this.state.ButtonStateHolder || 
+                this.state.firstname == '' || 
+                this.state.lastname || this.state.date == '' || this.state.fathername=='' || 
+                this.state.gender =='' || this.state.email=='' || this.state.adhaarnumber =='' || 
+                this.state.pincode=='' || this.state.city=='' || this.state.state ||
+                this.state.locality=='' || this.state.address==''
+            }
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
             onPress={() => {this.insertdata_into_db(); this.getFullName()}}
             //onPress={() => this.props.navigation.navigate('bankdetails',{accountholdername:this.state.fullname})}
-            onPress={() => {this.state.studentnotselected == false? this.props.navigation.navigate('employerdetails'): this.props.navigation.navigate('collegedetails')}}
+            onPress={() => {this.state.isSalariedSelected? this.props.navigation.navigate('employerdetails'): this.props.navigation.navigate('collegedetails')}}
         >
             <Text style={{textAlign:'center',paddingTop:7}}>
                 Submit

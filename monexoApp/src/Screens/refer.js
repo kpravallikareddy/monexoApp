@@ -1,7 +1,8 @@
 import { NativeAppEventEmitter } from "react-native";
 import React from 'react';
 import {View, Text,TouchableOpacity, Image, Dimensions, CheckBox} from 'react-native';
-
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 const { height, width } = Dimensions.get('window')
 export default class Refer extends React.Component {

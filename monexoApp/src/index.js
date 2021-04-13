@@ -20,6 +20,10 @@ import ocrmon from './Screens/ocrmon'
 import home from './Screens/home'
 import collegedetails from './Screens/collegedetails'
 import creditscore from './Screens/creditscore'
+import pfm from './Screens/pfm'
+import spendings from './Screens/spendings'
+import transactions from './Screens/transactions'
+import Demo from './demo';
 //import './Screens/intro';
 
 
@@ -134,9 +138,31 @@ export const AppNavigator = createStackNavigator(
           headerShown:false
         }),
       },
+      pfm:{
+        screen:pfm,
+        navigationOptions: ({navigation}) => ({
+          headerShown:false
+        }),
+      },
+      spendings:{
+        screen:spendings,
+        navigationOptions: ({navigation}) => ({
+          headerShown:false
+        }),
+      },
+      transactions:{
+        screen:transactions,
+        navigationOptions: ({navigation}) => ({
+          headerShown:false
+        }),
+      },
+      demo:{
+        screen:Demo
+      }
     },
     {
-        initialRouteName:'home',
+        initialRouteName:'transactions',
+       //initialRouteName:'demo'
     },
 );
 const AppContainer = createAppContainer(AppNavigator);

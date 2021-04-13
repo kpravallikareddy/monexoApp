@@ -5,6 +5,8 @@ import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
 import { Linking } from "react-native";
 import { WebView } from 'react-native-webview';
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP,LOTUSPAY_SOURCE,LOTUSPAY_MANDATE } from '@env'
 
 const { height, width } = Dimensions.get('window')
 
@@ -38,11 +40,40 @@ export default class Enach extends React.Component {
             checked: false,
             ButtonStateHolder:true,
             status:'',
+            short_url:'',
             url:'',
             webviewvisible:false,
            // webview:null,
             sourceid:'',
-            //webviewRef: null,
+            amount_maximum:0,
+            creditor_agent_code:'IDFB',
+            creditor_utility_code:'NACH00000000003241',
+            debtor_agent_code:'',
+            debtor_account_name:'',
+            debtor_account_number:null,
+            debtor_agent_name:'',
+            frequency:'MNTH',
+            date_submitted:new Date(),
+            mandateID:'',
+            checkstatusresponse:'',
+            mandatestatus:'',
+            mandateURL:'',
+            sourcestatus:'',
+            sourceresponse:'',
+            type:'',
+            sourcestatus:'',
+            checkstatus:'',
+            date_submitted:new Date(),
+            umrn:'',
+            date_responded:new Date(),
+            date_acknowledged:new Date(),
+            date_cancelled:new Date(),
+            bank_account:'',
+            account_number:'',
+            nach_amount:0,
+            startdate:new Date(),
+
+
         }
         //this.onSubmit = this.onSubmit.bind(this);
     }
@@ -67,13 +98,69 @@ export default class Enach extends React.Component {
          this.setState({webviewvisible:true});
      }
     
+
+     // account details from salesforce
+    getdataSalesforce = () => {
+      console.log('salesforce');
+      fetch(BASE_URL_PHP+'/getRecordSingleDetail', {
+          "ID": "0011e000008lTxIAAU"
+      })
+          .then((response) => response.text())
+          .then((responseJson) => {
+              console.log(responseJson)
+              //console.log(responseJson.customer_account_info.recods[0].peer__Date_of_Birth__c)
+              // console.log(responseJson.customer_account_info.recods[0].peer__First_Name__c + responseJson.recods[0].peer__Last_Name__c)
+              // console.log(responseJson.customer_account_info.recods[0].Customer_ID__c)
+              // console.log(responseJson.customer_account_info.recods[0].PAN__c)
+
+              this.setState({
+                  customerid: responseJson.customer_account_info.recods[0].Customer_ID__c,
+                  pannumber: responseJson.customer_account_info.recods[0].PAN__c,
+                  dob: responseJson.customer_account_info.recods[0].peer__Date_of_Birth__c,
+                  name: responseJson.customer_account_info.recods[0].peer__First_Name__c + responseJson.recods[0].peer__Last_Name__c
+              })
+          }).catch((error) => {
+              console.error(error);
+          });
+  }
+
+
+  // enach details from salesforce
+  
+  getdataSalesforce = () => {
+    console.log('salesforce');
+    fetch(BASE_URL_PHP+'/getRecordSingleDetail', {
+        "ID": "0011e000008lTxIAAU"
+    })
+        .then((response) => response.text())
+        .then((responseJson) => {
+            console.log(responseJson)
+            //console.log(responseJson.customer_account_info.recods[0].peer__Date_of_Birth__c)
+            // console.log(responseJson.customer_account_info.recods[0].peer__First_Name__c + responseJson.recods[0].peer__Last_Name__c)
+            // console.log(responseJson.customer_account_info.recods[0].Customer_ID__c)
+            // console.log(responseJson.customer_account_info.recods[0].PAN__c)
+
+            this.setState({
+                customerid: responseJson.customer_account_info.recods[0].Customer_ID__c,
+                pannumber: responseJson.customer_account_info.recods[0].PAN__c,
+                dob: responseJson.customer_account_info.recods[0].peer__Date_of_Birth__c,
+                name: responseJson.customer_account_info.recods[0].peer__First_Name__c + responseJson.recods[0].peer__Last_Name__c
+            })
+        }).catch((error) => {
+            console.error(error);
+        });
+}
+
+
+
+
     // lotuspay source api integration    //+sk_test_GzAdSyss7OZ9dbhvZibmP5TA
     //'Basic c2tfdGVzdF9HekFkU3lzczdPWjlkYmh2WmlibVA1VEE6',
 
     fetchSource = () => {
          console.log('source');
 
-         fetch('https://api-test.lotuspay.com/v1/sources/', 
+         fetch(LOTUSPAY_SOURCE, 
        {
          method:'POST',
          headers:{
@@ -81,18 +168,18 @@ export default class Enach extends React.Component {
             'Content-Type': 'application/json',
           },
          body:JSON.stringify({"type":"nach_debit",
-                                "nach_debit":{"amount_maximum":10000,
-                                //"date_first_collection":"2020-01-01",
+                                "nach_debit":{"amount_maximum":this.state.nach_amount,
+                                "date_first_collection":this.state.startdate,
                                 "creditor_agent_code":"IDFB",
                                // "creditor_agent_name":"IDFB BANK",
                                 //"creditor_agent_mmbid":"IDFB0000001",
                                 "creditor_utility_code":"NACH00000000003241",
                                 "debtor_agent_code":"SBIN",
-                                "debtor_account_name":"PRAVALLIKA K",
-                                "debtor_account_number":"32697282948",
-                                "debtor_account_type":"savings",
-                                "debtor_email":"kpravallikareddy89@gmail.com",
-                                "debtor_mobile":"7995351713",
+                                //"debtor_account_name":"PRAVALLIKA K",
+                                "debtor_account_number":this.state.account_number,          //"32697282948",
+                               // "debtor_account_type":"savings",
+                               // "debtor_email":"kpravallikareddy89@gmail.com",
+                               // "debtor_mobile":"7995351713",
                                 //"debtor_pan":"DUHPK1756B",
                                 "frequency":"MNTH"},
                                // "redirect":{"return_url":"https://test.lotuspay.com/" }, 
@@ -103,9 +190,11 @@ export default class Enach extends React.Component {
          console.log('status:', JSON.stringify(responseJson.status))
          console.log('mandate url',responseJson.redirect.short_url)
          this.setState({
-            url:responseJson.redirect.short_url,
-            // url:responseJson.redirect.url,
-            // sourceid:responseJson.id,
+            short_url:responseJson.redirect.short_url,
+             url:responseJson.redirect.url,
+            sourceid:responseJson.id,
+            sourcestatus:responseJson.status,
+            sourceresponse:responseJson
             // webviewvisible:false
             })
          }).catch((error) =>
@@ -115,15 +204,49 @@ export default class Enach extends React.Component {
        }
 
        onClickUrl = () => {
-           Linking.openURL(this.state.url)
+           Linking.openURL(this.state.short_url)
        }
+
+
+       //check source status
 
        checkSourceStatus = async () => {
         console.log('check source status');
         
-        await delay(100000);
+        await delay(10000);
      
-        fetch('https://api-test.lotuspay.com/v1/sources/'+this.state.sourceid, 
+        fetch(LOTUSPAY_SOURCE+this.state.sourceid, 
+        {
+          method:'GET',
+          headers:{
+             'Authorization': 'Basic c2tfdGVzdF9HekFkU3lzczdPWjlkYmh2WmlibVA1VEE6',
+             'Content-Type': 'application/json',
+           },
+        }).then((response) =>response.json())
+          .then((responseJson) =>{
+          console.log('response:',responseJson)
+          this.setState({
+                sourceid:responseJson.id,
+                sourcestatus:responseJson.status,
+                mandateID:responseJson.mandate
+          })
+          if(responseJson.status == "submitted") {
+              this.checkMandateStatus();
+          }
+          }).catch((error) =>
+          {
+            console.error(error);
+          });
+        
+       }
+
+
+       checkMandateStatus = async () => {
+        console.log('check source status');
+        
+        await delay(10000);
+     
+        fetch(LOTUSPAY_MANDATE+this.state.mandateID, 
         {
           method:'GET',
           headers:{
@@ -139,6 +262,129 @@ export default class Enach extends React.Component {
           });
         
        }
+
+
+       // insert source creation data into db
+
+       sourcecreationdata_into_db = async () => {
+        console.log('test');
+       await fetch(BASE_URL_PYTHON+'/sourcecreationstatus',
+      {
+        method:'POST',
+        headers:{
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body:
+          JSON.stringify(
+              {
+            "appid": this.state.appid,
+            "customerid":this.state.customerid,
+            "sourceid":this.state.sourceid,
+            "amount_maximum":this.state.amount_maximum,
+            "debtor_account_name":this.state.debtor_account_name,
+            "debtor_account_number":this.state.debtor_account_number,
+           // "debtor_account_type":this.state.debtor_account_type,
+            "debtor_agent_name":this.state.debtor_agent_name,
+            "short_url":this.state.short_url,
+            "url":this.state.url,
+            "type":this.state.type,
+            "sourcestatus":this.state.sourcestatus,
+            "sourceresponse":this.state.sourceresponse
+          }
+          )
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    }
+
+
+    // insert source status data into db
+
+    sourcestatusdata_into_db = async () => {
+        console.log('test');
+       await fetch(BASE_URL_PYTHON+'/sourcecheckstatus',
+      {
+        method:'POST',
+        headers:{
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body:
+          JSON.stringify(
+              {
+            "appid": this.state.appid,
+            "customerid":this.state.customerid,
+            "sourceid":this.state.sourceid,
+            "date_submitted":this.state.date_submitted,
+            "amount_maximum":this.state.amount_maximum,
+            "checkstatus":this.state.checkstatus,
+            "mandateID":this.state.mandateID,
+            "mandateURL":this.state.mandateURL,
+            "checkstatusresponse":this.state.checkstatusresponse
+          }
+          )
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    }
+
+
+    // insert mandate status data into db
+
+    mandatestatusdata_into_db = async () => {
+        console.log('test');
+       await fetch(BASE_URL_PYTHON+'/mandatestatus',
+      {
+        method:'POST',
+        headers:{
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body:
+          JSON.stringify(
+              {
+            "appid": this.state.appid,
+            "customerid":this.state.customerid,
+            "sourceid":this.state.sourceid,
+            "mandateID":this.state.mandateID,
+            "mandatestatus":this.state.mandatestatus,
+            "umrn":this.state.umrn,
+            "date_responded":this.state.date_responded,
+            "date_acknowledged":this.state.date_acknowledged,
+            "date_cancelled":this.state.date_cancelled,
+            "amount_maximum":this.state.amount_maximum,
+            "debtor_account_number":this.state.debtor_account_number,
+            "bank_account":this.state.bank_account,
+            "mandateresponse":this.state.mandateresponse
+          }
+          )
+      }).then((response) =>response.json())
+        .then((responseJson) =>{
+        console.log(responseJson)
+        }).catch((error) =>
+        {
+          console.error(error);
+        });
+    }
+
+
+
+
+
+
+
+
+
+
 
        renderContent() {
            return (

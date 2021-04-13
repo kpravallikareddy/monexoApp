@@ -9,6 +9,8 @@ import uuid from 'react-native-uuid';
 import date from 'date-and-time';
 import ToggleSwitch from 'toggle-switch-react-native'
 import { ScrollView } from "react-native-gesture-handler";
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 //var jwt = require('jwt-simple');
 

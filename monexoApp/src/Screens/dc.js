@@ -12,7 +12,9 @@ import SliderText from 'react-native-slider-text';
 import Slider from '@react-native-community/slider';
 import { ScrollView } from "react-native-gesture-handler";
 import { BlurView } from "@react-native-community/blur";
-
+import { SOME_KEY } from '@env'
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 
 const maximumValue=36;
@@ -25,14 +27,15 @@ export default class Dc extends React.Component {
             showCircleImg:true,
             termsAccepted: false,
             checked: false,
-            sliderValue:maximumValue/2,
+         //   sliderValue:maximumValue/2,
+            sliderValueduration:0,
             value:0.2,
             modalVisible:false,
             countchecked:0,
             limit:3,
             dc_amount:0,
-            minimum_month:0,
-            maximum_month:0,
+            minimum_month:3,
+            maximum_month:36,
             finalvalue:0,
             interest_rate:0,
             terms_accepted:false,
@@ -40,6 +43,10 @@ export default class Dc extends React.Component {
             amount1:0,
             amount2:0,
             amount3:0,
+            tenor:0,
+            loan_amount:0,
+            emi_amount:0,
+            userselecttenure:false,
 
             //modelHeight:Dimensions.get('window').height/2-10,
         }
@@ -51,6 +58,7 @@ export default class Dc extends React.Component {
         setTimeout(() => {
 
         },9000);
+        this.emiCaluclation();
     }
 
     handleOnPress = () => this.setState({checked: false})
@@ -75,7 +83,7 @@ export default class Dc extends React.Component {
 
       insertdata_into_db = async () => {
         console.log('test');
-       await fetch('http://10.0.2.2:8000/offer_details_dc/',
+       await fetch(BASE_URL_PYTHON+'/offer_details_dc',
       {
         method:'POST',
         headers:{
@@ -85,7 +93,7 @@ export default class Dc extends React.Component {
         body:
           JSON.stringify(
               {
-            "appid": '12345',
+            "appid": this.state.appid,
             "customerid":this.state.customerid,
             "dc_amount":this.state.dc_amount,  
             "minimum_month":this.state.minimum_month,
@@ -106,7 +114,7 @@ export default class Dc extends React.Component {
 
     insert_cust_selectdata_into_db = async () => {
         console.log('test');
-       await fetch('http://10.0.2.2:8000/offer_details_dc_cust_selects/',
+       await fetch(BASE_URL_PYTHON+'/offer_details_dc_cust_selects',
       {
         method:'POST',
         headers:{
@@ -116,7 +124,7 @@ export default class Dc extends React.Component {
         body:
           JSON.stringify(
               {
-            "appid": '12345',
+            "appid": this.state.appid,
             "customerid":this.state.customerid,
             "selected_dc":this.state.selected_dc,
           }
@@ -131,11 +139,117 @@ export default class Dc extends React.Component {
     }
 
 
-    onChangeamount(text) {
-        // this.setState({amount});
-         
-         
+    // decision
+creditDecision = () => {
+    // await delay(10000);
+     console.log('decision');
+   fetch(BASE_URL_PHP+'/creditDecision',
+   {
+     method:'POST',
+     headers:{
+      // Accept: 'application/json',
+       'Content-Type': 'application/json',
+     },
+     body:
+       JSON.stringify(
+           {
+         "application_id": this.state.appid,
+         "cust_id":this.state.customerid,
+       }
+       )
+   }).then((response) =>response.json())
+     .then((responseJson) =>{
+     console.log('response:',responseJson)
+     if(responseJson.Responsedata.status == "APP"){     //REF   //REJ
+       if(responseJson.Responsedata.product == "DC"){
+         this.setState({
+            //plan:responseJson.Responsedata.plan,
+            //min_amt:responseJson.Responsedata.min_loan_amount,
+            dc_amount:responseJson.Responsedata.max_loan_amount,
+            minimum_month:responseJson.Responsedata.min_tenor,
+            maximum_month:responseJson.Responsedata.max_tenor,
+            interest_rate:responseJson.Responsedata.roi
+         })
+       } 
     }
+     }).catch((error) =>
+     {
+       console.error(error);
+     });
+   }
+
+   getProfessiontype = () => {
+    console.log('profession');
+    fetch(BASE_URL_PYTHON+'/personalinformation'+this.state.appid)
+        .then((response) => response.json())
+        .then((responseJson) => {
+           console.log(responseJson);
+           if(responseJson.profession_type == 'Student'){
+            this.props.navigation.navigate('ocr')
+           } else {
+            this.props.navigation.navigate('vkyc')
+           }
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }
+
+
+tenorforEmi = () => {
+    if(this.state.userselecttenure) {
+        this.setState({tenor:this.state.sliderValueduration})
+    } else{
+        this.setState({tenor:this.state.maximum_month})
+    }
+}
+
+//amountforEmi = () => {
+   // if(this.state.userselectamount) {
+   //     this.setState({loan_amount:this.state.})
+   // } else {
+  //      this.setState({loan_amount:this.state.max_amt})
+   // }
+//}
+
+
+// EMI calculation
+
+emiCaluclation = () => {
+    // await delay(10000);
+    console.log('emi');
+    fetch(BASE_URL_PHP+'/calculate_emi',
+        {
+            method: 'POST',
+            headers: {
+                // Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body:
+                JSON.stringify(
+                    {
+                        "tenor": this.tenorforEmi(),
+                        "loan_amount":this.state.dc_amount,   //this.amountforEmi(),
+                        "roi":this.state.interest_rate
+                    }
+                )
+        }).then((response) => response.json())
+        .then((responseJson) => {
+            console.log('response:', responseJson)
+            if(responseJson.status == 200) {
+                this.setState({emi_amount: responseJson.emi_amount})
+            }
+            
+        }).catch((error) => {
+            console.error(error);
+        });
+}
+
+
+
+
+
+
 
 
 
@@ -195,6 +309,7 @@ export default class Dc extends React.Component {
             </View>
             </View>
             </View>
+            <View style={{marginTop:0, alignItems:'center'}}>
             <View style={{flex:1}}>
                 <LottieView 
                 source={require('../../json/confetti-cannons.json')}
@@ -214,11 +329,11 @@ export default class Dc extends React.Component {
                 ref={animation => { this.anim = animation; }} 
                 />
             </View>
- 
-            <View style={{marginTop:0, alignItems:'center', }}>
-            <Text style={{fontSize:24, fontWeight:'bold',marginBottom:10}}>
+            
+            <Text style={{fontSize:20,fontWeight:'bold',marginTop:20}}>
                 Congratulations
             </Text>
+            <Text>{SOME_KEY}</Text>
             </View>
             
             {/*<View style={{marginBottom:0, marginTop:-30}}>
@@ -231,20 +346,20 @@ export default class Dc extends React.Component {
                 ref={animation => { this.anim = animation; }} 
                 />
             </View>*/}
-            <View style={{marginTop:10, alignItems:'center', borderWidth:0.5, borderColor:'#D1D1D1', margin:30,paddingBottom:20}}> 
+            <View style={{marginTop:20, alignItems:'center', borderTopWidth:1,borderBottomWidth:1, borderColor:'#D1D1D1', margin:30,paddingBottom:20}}> 
                 <Text style={{paddingBottom:5, fontFamily:'Nunito',fontWeight:'bold', marginTop:10}}>
                 You are Qualified for
                 </Text>
                 <Text style={{fontFamily:'Nunito',fontWeight:'bold'}}>
-                 Debt consolidation upto {'\u20B9'}70,000
+                 Debt consolidation upto {'\u20B9'}{this.state.dc_amount}
                 </Text>
             </View>
-            <View style={{justifyContent:'center', marginTop:-20, flexDirection:'row'}}>
-                <Text style={{fontSize:12,fontWeight:'bold'}}>
-                    You are eligible for {'\u20B9'}70,000 and a highest saving of {" "} 
+            <View style={{justifyContent:'center', marginTop:-15, flexDirection:'row', marginBottom:20}}>
+                <Text style={{fontSize:10,fontWeight:'bold'}}>
+                    You are eligible for {'\u20B9'}{this.state.dc_amount} and a highest saving of {" "} 
                 </Text>
-                <View style={{height:20,width:64, borderRadius:15, backgroundColor:'#FFC700',alignItems:'center', justifyContent:'center' }}>
-                <Text style={{fontSize:12,fontWeight:'bold'}}>
+                <View style={{height:18,width:64, borderRadius:15, backgroundColor:'#FFC700',alignItems:'center', justifyContent:'center' }}>
+                <Text style={{fontSize:10,fontWeight:'bold'}}>
                  {'\u20B9'}63,451
                 </Text>
                 </View>
@@ -557,12 +672,19 @@ export default class Dc extends React.Component {
         />*/}
 
             <SliderText 
-            maximumValue={36} 
+            maximumValue={this.state.maximum_month} 
+            minimumValue={this.state.minimum_month}
             stepValue={3} 
-            minimumValueLabel="6 months" 
-            maximumValueLabel="36 months" 
-            onValueChange={(sliderValue) => this.setState({sliderValue})}
-            sliderValue={this.state.sliderValue} 
+            minimumValueLabel= {this.state.minimum_month +" months"} 
+            maximumValueLabel={this.state.maximum_month +" months"}
+            sliderValue={this.state.maximum_month} 
+           // onValueChange={(duration) => {this.setState({sliderValue}); this.emiCaluclation();}}
+            onValueChange={async (duration) => {
+                await this.setState({ sliderValueduration: duration, userselecttenure:true });
+                this.emiCaluclation();
+                console.log(this.state.sliderValueduration)
+            }
+            }
             minimumTrackTintColor="#006202"
             maximumTrackTintColor="#61C261"
             thumbTintColor='#61C261'
@@ -573,12 +695,12 @@ export default class Dc extends React.Component {
             <View style={{alignItems:'center'}}>  
             <View>
                 <Text style={{paddingBottom:5, fontWeight:'bold'}}>
-                    You will payback total {'\u20B9'}70,999
+                    You will payback total {'\u20B9'}{this.state.tenor * this.state.emi_amount}
                 </Text>
 
                 </View>
                 <Text style={{fontWeight:'bold'}}>
-                    in 8 EMI's of {'\u20B9'}8,875
+                    in {this.state.tenor} EMI's of {'\u20B9'}{this.state.emi_amount}
                 </Text>
             </View>
             <View style={{flexDirection:'row', justifyContent:'center', marginTop:20}}>
@@ -589,9 +711,10 @@ export default class Dc extends React.Component {
             <Text style={{marginTop:5, fontWeight:'bold', color:'#61C261',textDecorationLine: 'underline'}}>Legal agreements</Text>
             </View>
             <View style={{alignItems:'center', marginTop:20}}>
-            <TouchableOpacity style={{marginRight:20,width:'70%',height:35,borderRadius:5,backgroundColor:'#2A9134',opacity:0.5,marginBottom:20}}
+            <TouchableOpacity style={{marginRight:20,width:'70%',height:35,borderRadius:5,backgroundColor:!this.state.checked  ? 'rgba(42,145,52,0.3)':'#2A9134' ,marginBottom:20}}
             disabled={!checked}
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
+            onPress={() => {this.insertdata_into_db();this.getProfessiontype();}}
             //onPress={() => this.props.navigation.navigate('pl')}
         >
             <Text style={{textAlign:'center',paddingTop:7, color:'#ffffff'}}>

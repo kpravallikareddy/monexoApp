@@ -35,6 +35,12 @@ allprojects {
             url("$rootDir/../node_modules/jsc-android/dist")
         }
 
+        maven {
+            // Add this to resolve adgyde aar file
+            url "https://dl.bintray.com/adgyde/maven"
+        }
+
+
        // maven { url "https://jitpack.io" }
 
         google()

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.adgydereactlibrary.AdgydeSdkPackage;
 import com.imagepicker.ImagePickerPackage;
 import com.imagepicker.ImagePickerPackage;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
@@ -22,7 +23,9 @@ import java.util.List;
 import io.invertase.firebase.RNFirebasePackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;                       
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
-//import com.github.droibit.android.reactnative.customtabs.CustomTabsPackage;
+import com.adgyde.android.AdGyde;
+
+
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -40,7 +43,8 @@ public class MainApplication extends Application implements ReactApplication {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
           packages.add(new RNHyperSnapSDKBridge());
-          //packages.add(new MainReactPackage());
+          //packages.add(new MainReactPackage(),
+          //packages.add(new AdgydeSdkPackage());
           //packages.add(new RNFirebasePackage());
           packages.add(new RNFirebaseMessagingPackage());
           packages.add(new RNFirebaseNotificationsPackage());
@@ -55,6 +59,39 @@ public class MainApplication extends Application implements ReactApplication {
         }
       };
 
+/**
+ * method returns media source(SubPublisher ABC) as string format
+ * @return: media source in String format
+ */
+//String getUtmSource = AdGyde.getUtmSource();
+
+/**
+ * method returns campaign name(Campaign ABC) as string format same as channel name written on Adgyde dashboard
+ * @return: campaign name in String format
+ */
+//String getCampaignName = AdGyde.getCampaignName();
+
+/**
+ * method returns campaign id (1234) as int format same as provided by adgyde
+ * @return: campaign id in int format
+ */
+//int getCampaignId = AdGyde.getCampaignId();
+
+/**
+ * method returns channel name (Publisher ABC) as string format same as channel/partner name integarted with Adgyde
+ * @return: channel name in String format
+ */
+//String getChannelName = AdGyde.getChannelName();
+
+
+/**
+ * method returns channel id(3456) as int format which are provided by Adgyde
+ * @return: channel id in int format
+ */
+//int getChannelId = AdGyde.getChannelId();
+
+
+
   @Override
   public ReactNativeHost getReactNativeHost() {
     return mReactNativeHost;
@@ -64,7 +101,10 @@ public class MainApplication extends Application implements ReactApplication {
   public void onCreate() {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
+    //Example of AdGyde Init Calling
+    AdGyde.init(this,"K403247917960182","Organic");
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+    
   }
 
   /**

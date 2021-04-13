@@ -36,6 +36,7 @@
 		DC69408AC4A347AD975BAC91 /* FontAwesome5_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3F478662456C426EB811B857 /* FontAwesome5_Regular.ttf */; };
 		E8D4A2DE46BC43F5B40D7771 /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 04BCCA1CB5684B9286D58BB5 /* Feather.ttf */; };
 		ED62D95A005F4E49B7D66E9C /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0E4490A4A0AD453C842FC97A /* Ionicons.ttf */; };
+		EA98D520BF9947529D8E8CCD /* libAdgydeSdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9121A55330B846E69AC37373 /* libAdgydeSdk.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +100,8 @@
 		E271163B55AFD8137DDA9253 /* Pods-monexoApp-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-monexoApp-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-monexoApp-tvOSTests/Pods-monexoApp-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
+		CA371DFF64334BA18F6FF472 /* AdgydeSdk.xcodeproj */ = {isa = PBXFileReference; name = "AdgydeSdk.xcodeproj"; path = "../node_modules/react-native-adgyde-sdk/ios/AdgydeSdk.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		9121A55330B846E69AC37373 /* libAdgydeSdk.a */ = {isa = PBXFileReference; name = "libAdgydeSdk.a"; path = "libAdgydeSdk.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +118,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				30E3D24F694FB036BC0ED68F /* libPods-monexoApp.a in Frameworks */,
+				EA98D520BF9947529D8E8CCD /* libAdgydeSdk.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,6 +211,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				CA371DFF64334BA18F6FF472 /* AdgydeSdk.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -762,6 +767,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/monexoApp.app/monexoApp";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native-adgyde-sdk/ios",
+				);
 			};
 			name = Debug;
 		};
@@ -782,6 +795,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/monexoApp.app/monexoApp";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native-adgyde-sdk/ios",
+				);
 			};
 			name = Release;
 		};
@@ -806,6 +827,10 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native-adgyde-sdk/ios",
+				);
 			};
 			name = Debug;
 		};
@@ -828,6 +853,10 @@
 				PRODUCT_NAME = monexoApp;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native-adgyde-sdk/ios",
+				);
 			};
 			name = Release;
 		};
@@ -856,6 +885,14 @@
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 10.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native-adgyde-sdk/ios",
+				);
 			};
 			name = Debug;
 		};
@@ -884,6 +921,14 @@
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 10.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native-adgyde-sdk/ios",
+				);
 			};
 			name = Release;
 		};
@@ -911,6 +956,14 @@
 				SDKROOT = appletvos;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/monexoApp-tvOS.app/monexoApp-tvOS";
 				TVOS_DEPLOYMENT_TARGET = 10.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native-adgyde-sdk/ios",
+				);
 			};
 			name = Debug;
 		};
@@ -938,6 +991,14 @@
 				SDKROOT = appletvos;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/monexoApp-tvOS.app/monexoApp-tvOS";
 				TVOS_DEPLOYMENT_TARGET = 10.1;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../node_modules/react-native-adgyde-sdk/ios",
+				);
 			};
 			name = Release;
 		};

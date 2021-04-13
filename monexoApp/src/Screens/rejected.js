@@ -11,6 +11,8 @@ import SliderText from 'react-native-slider-text';
 //import Slider from "react-native-slider";
 import Slider from '@react-native-community/slider';
 import { ScrollView } from "react-native-gesture-handler";
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 const { height, width } = Dimensions.get('window')
 export default class Rejected extends React.Component {

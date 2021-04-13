@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {View,StyleSheet, Text,TouchableOpacity, Image, Dimensions} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler'
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 export default class Creditscore extends React.Component {
     constructor(props){

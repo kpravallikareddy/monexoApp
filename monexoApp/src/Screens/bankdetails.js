@@ -11,13 +11,16 @@ import { WebView } from 'react-native-webview';
 import { Alert } from "react-native";
 import { acc } from "react-native-reanimated";
 //import HTMLView from 'react-native-htmlview';
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP,FINBIT_JWTTOKEN, FINBIT_NETBANKING,FINBIT_SUMMARYFORSAVINGS,TOKEN_EMAIL,TOKEN_PW } from '@env'
+
 
 const { height, width } = Dimensions.get('window')
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-const url = 'https://unifiedtrial.finbit.io/web/?accessToken=1tb67688tbi18kdppglcca89lmoqit7r&callbackurl=https://uat-newapi.monexo.co/bank_transactions_finbit/' 
-const callback = 'https://uat-newapi.monexo.co/bank_transactions_finbit/'
+const url = 'https://unifiedtrial.finbit.io/web/?accessToken=1tb67688tbi18kdppglcca89lmoqit7r&callbackurl=http://uat-newmapi.monexo.co/bank_transactions_finbit/' 
+const callback = 'http://uat-newmapi.monexo.co/bank_transactions_finbit/'
 
 
 //injectedJavaScript={INJECTED_JAVASCRIPT}
@@ -70,6 +73,7 @@ export default class Preoffer extends React.Component {
             summaryforsavingsresponse:'',
             jwtokenresponse:'',
             bankdetailsverified:false,
+            hidenetbanking:false,
            
         }
         //this.onSubmit = this.onSubmit.bind(this);
@@ -89,7 +93,7 @@ export default class Preoffer extends React.Component {
     //  setTimeout(function(){
       await delay(10000)
         console.log('test');
-        fetch('http://10.0.2.2:8000/bankdetails/',
+        fetch(BASE_URL_PYTHON+'/bankdetails',
       {
         method:'POST',
         headers:{
@@ -145,16 +149,16 @@ export default class Preoffer extends React.Component {
     this.getsummaryforsavings();
     this.insertsummaryforsavings_into_db();
    // this.props.navigation.navigate('employerdetails')
-    this.setState({webviewvisible:false, secondsubmitvisible:true,bankdetailsverified:true});
+    this.setState({webviewvisible:false, secondsubmitvisible:true,bankdetailsverified:true, hidenetbanking:true, showHide:false});
   };
 
 
   jwttoken = () => {
    // console.log('jwt');
     var data = new FormData();
-    data.append("emailAddress", "praveen.krishnam@monexo.co");
-    data.append("password", "L!@Py#Kt7a5MK!Pnw8");
-    fetch('https://trial.fin360.in/bank-auth/api/v2/login',
+    data.append("emailAddress", TOKEN_EMAIL);
+    data.append("password", TOKEN_PW);
+    fetch(FINBIT_JWTTOKEN,
   {
     method:'POST',
     body:data,
@@ -173,7 +177,7 @@ export default class Preoffer extends React.Component {
 
   getsummaryforsavings = async () => {
     //console.log('summary');
-    fetch('https://trial.fin360.in/bank-account/api/v1/summaryForSavings/'+this.state.accountUID+'.json',   //require('../../json/confetti-cannons.json')
+    fetch(FINBIT_SUMMARYFORSAVINGS+this.state.accountUID+'.json',   //require('../../json/confetti-cannons.json')
   {
     method:'POST',
     headers:{
@@ -194,7 +198,7 @@ insertsummaryforsavings_into_db = async () => {
   await delay(15000);
   console.log('finbitsummaryforsavings');
   //setTimeout(function(){
-  fetch('http://10.0.2.2:8000/summaryforsavings_finbit/',
+  fetch(BASE_URL_PYTHON+'/summaryforsavings_finbit',
 {
   method:'POST',
   headers:{
@@ -223,7 +227,7 @@ insertjwttoken_into_db = async () => {
   await delay(5000);
   console.log('finbitoken');
   //setTimeout(function(){
-  fetch('http://10.0.2.2:8000/jwttoken_finbit/',
+  fetch(BASE_URL_PYTHON+'/jwttoken_finbit',
 {
   method:'POST',
   headers:{
@@ -251,7 +255,7 @@ insertjwttoken_into_db = async () => {
   insertfinbitdata_into_db = async () => {
     await delay(10000);
     console.log('finbit');
-   await fetch('http://10.0.2.2:8000/bank_transactions_finbit/',
+   await fetch(BASE_URL_PYTHON+'/bank_transactions_finbit',
   {
     method:'POST',
     headers:{
@@ -290,6 +294,7 @@ insertjwttoken_into_db = async () => {
        // this.webview.stopLoading();
        this.setState({webviewvisible:false})
         // maybe close this view?
+       // this.creditDecision();
       }
   }
 
@@ -348,7 +353,7 @@ insertjwttoken_into_db = async () => {
 
        // ifsccode: 'ANDB0CG7721'  bank name: andhra bank, branch: kavuru
 
-        fetch('http://10.0.2.2:8000/api/ifsccodes/'+text)
+        fetch(BASE_URL_PYTHON+'/api/ifsccodes'+text)
             .then((response) => response.json())
             .then((responseJson) => {
              console.log(responseJson);
@@ -365,7 +370,7 @@ insertjwttoken_into_db = async () => {
       console.log('test');
      // console.log(appid);
   
-      fetch('http://10.0.2.2:8000/personalinformation/'+this.state.appid)
+      fetch(BASE_URL_PYTHON+'/personalinformation'+this.state.appid)
           .then((response) => response.json())
           .then((responseJson) => {
            console.log(responseJson);
@@ -380,7 +385,7 @@ insertjwttoken_into_db = async () => {
 
   updateSalesforce = () => {
     console.log('salesforce');
-    fetch('http://uat-newapioth.monexo.co/api/saleForceUpdateRecords',
+    fetch(BASE_URL_PHP+'/saleForceUpdateRecords',
     {
         method:'POST',
         headers:{
@@ -419,6 +424,46 @@ insertjwttoken_into_db = async () => {
     });
 }
 
+// decision
+creditDecision = () => {
+ // await delay(10000);
+  console.log('decision');
+fetch(BASE_URL_PHP+'/creditDecision',
+{
+  method:'POST',
+  headers:{
+   // Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
+  body:
+    JSON.stringify(
+        {
+      "application_id": this.state.appid,
+      "cust_id":this.state.customerid,
+    }
+    )
+}).then((response) =>response.json())
+  .then((responseJson) =>{
+  console.log('response:',responseJson)
+  if(responseJson.Responsedata.status == "APP"){     //REF   //REJ
+    if(responseJson.Responsedata.product == "PL"){
+      this.props.navigation.navigate('pl')
+    } else if(responseJson.Responsedata.product == "DC"){
+      this.props.navigation.navigate('dc')
+    }
+  } else if (responseJson.Responsedata.status == "REF"){
+    this.props.navigation.navigate('refer')
+  } else {
+    this.props.navigation.navigate('rejected')
+  }
+
+  }).catch((error) =>
+  {
+    console.error(error);
+  });
+}
+
+
 
 
 
@@ -435,7 +480,7 @@ insertjwttoken_into_db = async () => {
             ref={ref => {
             this.webview = ref;
             }}
-            source={{ uri: "https://unifiedtrial.finbit.io/web/?accessToken=1tb67688tbi18kdppglcca89lmoqit7r&locationurl=https://unifiedtrial.finbit.io" }}
+            source={{ uri: FINBIT_NETBANKING }}
             onMessage={this.onMessage}
             // injectedJavaScript={`window.testMessage = "hello world"`}
             injectedJavaScript={INJECTED_JAVASCRIPT}
@@ -558,26 +603,16 @@ insertjwttoken_into_db = async () => {
             </View>
         </View>
 
-        {/*    {this.state.secondsubmitvisible == true ?
-        <TouchableOpacity style={{marginTop:10,marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? 'rgba(42,145,52,0.5)':'#2A9134', opacity:0.5,marginBottom:20}}
-         // disabled={this.state.ButtonStateHolder || !this.state.validPan}
-          onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg, showHide:!this.state.showHide,bank_details_customer:'Yes'})}
-          onPress={() => {this.insertfinbitdata_into_db()}}
-          onPress={() => this.props.navigation.navigate('employerdetails')}
-        >
-          <Text style={{textAlign:'center',paddingTop:7}}>
-              Submit
-          </Text>
-        </TouchableOpacity>
-        :*/}
+        
+            {this.state.secondsubmitvisible == false ?
             <View>
             {this.state.showHide == false ? 
           <TouchableOpacity style={{marginTop:10,marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? 'rgba(42,145,52,0.5)':'#2A9134', opacity:0.5,marginBottom:20}}
          // disabled={this.state.accountHolderName =='' ||
-          //this.state.ifsc =='' || this.state.accnumber =='' //||
-          //this.state.bankname ==''|| this.state.branch ==''
+         // this.state.ifsc =='' || this.state.accnumber =='' ||
+         // this.state.bankname ==''|| this.state.branch ==''
          // }
-          onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg, showHide:!this.state.showHide,bank_details_customer:'Yes'})}
+          onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg, showHide:!this.state.showHide})}
          //  onPress={() => {this.insertdata_into_db()}}
          // onPress={() => this.props.navigation.navigate('employerdetails')}
         >
@@ -595,23 +630,23 @@ insertjwttoken_into_db = async () => {
         
         }
         </View>
-       {/* }*/}
+        :null}
       
         
             <View pointerEvents={this.state.showHide == false ? 'none' : 'auto'}>
                 <Text style={{marginLeft:20, fontWeight:'bold', fontSize:12, color:this.state.showHide ? '#000000': 'rgba(0,0,0,0.3)'}}>
                     Validate your bank account
                 </Text>
-                <View style={{borderWidth:0.1,backgroundColor: this.state.showHide ? '#9DFFFE': 'rgba(157,255,254,0.3)', marginTop:10, height:170, margin:20,}}>
+                <View style={{borderWidth:0.1,backgroundColor: this.state.showHide  ? '#9DFFFE': 'rgba(157,255,254,0.3)', marginTop:10, height:170, margin:20,}}>
                     <View style={{flexDirection:'row', marginRight:20}}>
                     <Image source={require('../../assets/netbanking.png')} blurRadius={1} style={{height:50,width:50,marginTop:15, marginLeft:10}} />
-                    <Text style={{marginLeft:10, fontWeight:'bold',fontSize:14,marginTop:15,color:this.state.showHide ? '#000000': 'rgba(0,0,0,0.3)'}}>
+                    <Text style={{marginLeft:10, fontWeight:'bold',fontSize:14,marginTop:15,color:this.state.showHide  ? '#000000': 'rgba(0,0,0,0.3)'}}>
                         Use Net Banking
                     </Text>
-                    <Text style={{marginTop:40,fontSize:11, marginLeft:-105, marginRight:20,color:this.state.showHide ? '#000000': 'rgba(0,0,0,0.3)'}}>
+                    <Text style={{marginTop:40,fontSize:11, marginLeft:-105, marginRight:20,color:this.state.showHide  ? '#000000': 'rgba(0,0,0,0.3)'}}>
                         Login to your Net banking to validate your bank 
                     </Text>
-                    <Text style={{marginTop:55,fontSize:11, marginLeft:-250, marginRight:20, color:this.state.showHide ? '#000000': 'rgba(0,0,0,0.3)'}}>
+                    <Text style={{marginTop:55,fontSize:11, marginLeft:-250, marginRight:20, color:this.state.showHide  ? '#000000': 'rgba(0,0,0,0.3)'}}>
                       account details
                     </Text>
                     </View>
@@ -631,7 +666,7 @@ insertjwttoken_into_db = async () => {
         
             <View style={{flexDirection:'row',marginTop:-5, marginLeft:Dimensions.get('window').width/2-10}}>
             <Image source={require('../../assets/timer.png')} blurRadius={0.5} style={{height:15,width:15,}} />
-            <Text style={{fontSize:12, color:this.state.showHide ? '#000000': 'rgba(0,0,0,0.3)'}}>
+            <Text style={{fontSize:12, color:this.state.showHide  ? '#000000': 'rgba(0,0,0,0.3)'}}>
                 Takes Just 30 Seconds
             </Text>
             </View>
@@ -640,7 +675,21 @@ insertjwttoken_into_db = async () => {
             </View> 
             </View>
         }
-            
+          
+          {this.state.secondsubmitvisible == true ?
+          <TouchableOpacity style={{marginTop:10,marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder ? 'rgba(42,145,52,0.5)':'#2A9134', opacity:0.5,marginBottom:20}}
+          disabled={this.state.bank_details_customer=='Yes' }
+         // onPress={()=> this.setState({bank_details_customer:'Yes'})}
+          onPress={() => {this.insertfinbitdata_into_db();this.creditDecision();}}
+          
+          //onPress={() => this.props.navigation.navigate('employerdetails')}
+        >
+          <Text style={{textAlign:'center',paddingTop:7}}>
+              Submit
+          </Text>
+        </TouchableOpacity>
+        :null}
+
             </ScrollView>
             
         );

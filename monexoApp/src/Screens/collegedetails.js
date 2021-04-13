@@ -9,6 +9,8 @@ import DocumentPicker from 'react-native-document-picker';
 import { Platform } from 'react-native';
 import DropDownPicker from "react-native-custom-dropdown";
 import moment from 'moment';
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 
 var ImagePicker = require('react-native-image-picker');
@@ -189,7 +191,7 @@ fetchCitygovt = (text) => {
 };
 
 
-fetchCity = (text) => {
+fetchCity1 = (text) => {
     console.log('geospoc-city');
     fetch('http://127.0.0.1:8000/addressAutofill/getCity/'+text)
         .then((response) => response.json())
@@ -207,37 +209,112 @@ fetchCity = (text) => {
         });
 };
 
+fetchCity = () => {
+  // console.log(this.state.pincode);
+   fetch(BASE_URL_PYTHON+'/addressAutofill/getCity',
+   {
+       method:'POST',
+       headers:{
+         Accept: 'application/json',
+         'Content-Type': 'application/json',
+       },
+       body:
+         JSON.stringify({
+           "pincode":this.state.pincode
+         })
+     }).then((response) =>response.json())
+       .then((responseJson) =>{
+      // console.log(responseJson)
+     //  console.log("city",responseJson.data.city)
+       this.setState({city:responseJson.data.city})
+       }).catch((error) =>
+       {
+         console.error(error);
+       });
+};
+
 fetchLocality = async () => {
-    await delay(3000)
-    console.log('geospoc-locality');
-    fetch('http://127.0.0.1:8000/addressAutofill/getLocalities/'+this.state.city+this.state.pincode)
-        .then((response) => response.json())
-        .then((responseJson) => {
-           console.log(responseJson);
-            //if(responseJson.status=='ok'){
-            //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-           //}
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+   await delay(3000)
+   console.log('geospoc-locality');
+   fetch(BASE_URL_PYTHON+'/addressAutofill/getLocalities',
+   {
+       method:'POST',
+       headers:{
+         Accept: 'application/json',
+         'Content-Type': 'application/json',
+       },
+       body:
+         JSON.stringify({
+           "city":this.state.city,
+           "pincode":this.state.pincode,
+         })
+     }).then((response) =>response.json())
+       .then((responseJson) =>{
+       //console.log(responseJson)
+      // console.log(responseJson.data.localities[0])
+       this.setState({locality:responseJson.data.localities[0]})
+       }).catch((error) =>
+       {
+         console.error(error);
+       });
 };
 
 fetchSubLocality = async () => {
-    await delay(5000)
-    console.log('geospoc-sublocality');
-    fetch('http://127.0.0.1:8000/addressAutofill/getSubLocalities/'+this.state.city+this.state.pincode+this.state.locality)
-        .then((response) => response.json())
-        .then((responseJson) => {
-           console.log(responseJson);
-            //if(responseJson.status=='ok'){
-            //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-           //}
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+   await delay(5000)
+ //  console.log('geospoc-sublocality');
+   fetch(BASE_URL_PYTHON+'/addressAutofill/getSubLocalities',
+   {
+       method:'POST',
+       headers:{
+         Accept: 'application/json',
+         'Content-Type': 'application/json',
+       },
+       body:
+         JSON.stringify({
+           "city":this.state.city,
+           "pincode":this.state.pincode,
+           "locality":this.state.locality,
+         })
+     }).then((response) =>response.json())
+       .then((responseJson) =>{
+      // console.log(responseJson)
+      // console.log(responseJson.data.subLocalities[0])
+       this.setState({sublocality:responseJson.data.subLocalities[0]})
+       }).catch((error) =>
+       {
+         console.error(error);
+       });
 };
+
+fetchLatLong = async () => {
+   await delay(5000)
+   console.log('geospoc-latlong');
+   fetch(BASE_URL_PYTHON+'/geocode',
+   {
+       method:'POST',
+       headers:{
+         Accept: 'application/json',
+         'Content-Type': 'application/json',
+       },
+       body:
+         JSON.stringify({
+           "address":this.state.address,
+           "city":this.state.city,
+           "pincode":this.state.pincode,
+         })
+     }).then((response) =>response.json())
+       .then((responseJson) =>{
+       console.log(responseJson)
+       console.log(responseJson.message.data.latitude)
+       console.log(responseJson.message.data.longitude)
+     //  this.setState({latitude:responseJson.message.data.latitude, 
+     //      longitude:responseJson.message.data.longitude})
+       }).catch((error) =>
+       {
+         console.error(error);
+       });
+};
+
 
 
 onChangeAddress(address){
@@ -487,7 +564,7 @@ onChangeAddress(address){
 
     insertdata_into_db = async () => {
         console.log('test');
-       await fetch('http://10.0.2.2:8000/studentdetails/',
+       await fetch(BASE_URL_PYTHON+'/studentdetails',
       {
         method:'POST',
         headers:{
@@ -528,7 +605,7 @@ onChangeAddress(address){
 
     updateSalesforce = () => {
       console.log('salesforce');
-      fetch('http://uat-newapioth.monexo.co/api/saleForceUpdateRecords',
+      fetch(BASE_URL_PHP+'/saleForceUpdateRecords',
       {
           method:'POST',
           headers:{
@@ -619,54 +696,25 @@ onChangeAddress(address){
             });
     };
 
-
-    fetchCity = (text) => {
-      console.log('geospoc-city');
-      fetch('http://127.0.0.1:8000/addressAutofill/getCity/'+text)
+    fetchCitygovt = (text) => {
+      //console.log('test');
+      //console.log(text);
+      fetch('https://api.data.gov.in/resource/0a076478-3fd3-4e2c-b2d2-581876f56d77?format=json&api-key=579b464db66ec23bdd000001be9925f848ef448249d6231c74b87637&filters[pincode]='+text)
           .then((response) => response.json())
           .then((responseJson) => {
-             console.log(responseJson);
-              //if(responseJson.status=='ok'){
-              //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-             //}
+             // console.log("response:", responseJson.records);
+              // console.log(responseJson.records[0]);
+              let records = responseJson.records;
+              //console.log(records[Object.keys(records)[0]].regionname);
+              //console.log(records[Object.keys(records)[0]].statename);
+              if(responseJson.status=='ok'){
+                  this.setState({city:records[Object.keys(records)[0]].regionname})   //city:records[Object.keys(records)[0]].regionname
+             }
           })
           .catch((error) => {
               console.error(error);
           });
   };
-
-  fetchLocality = async () => {
-      await delay(3000)
-      console.log('geospoc-locality');
-      fetch('http://127.0.0.1:8000/addressAutofill/getLocalities/'+this.state.city+this.state.pincode)
-          .then((response) => response.json())
-          .then((responseJson) => {
-             console.log(responseJson);
-              //if(responseJson.status=='ok'){
-              //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-             //}
-          })
-          .catch((error) => {
-              console.error(error);
-          });
-  };
-
-  fetchSubLocality = async () => {
-      await delay(5000)
-      console.log('geospoc-sublocality');
-      fetch('http://127.0.0.1:8000/addressAutofill/getSubLocalities/'+this.state.city+this.state.pincode+this.state.locality)
-          .then((response) => response.json())
-          .then((responseJson) => {
-             console.log(responseJson);
-              //if(responseJson.status=='ok'){
-              //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-             //}
-          })
-          .catch((error) => {
-              console.error(error);
-          });
-  };
-
 
 
 createFormData = (photo, body) => {
@@ -685,7 +733,7 @@ createFormData = (photo, body) => {
 
 handleUploadPhoto = () => {
   console.log(this.state.photo.fileName);
-  fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
+  fetch(BASE_URL_PHP+'/uploadDocument',
   {
     method:'POST',
     headers:{  
@@ -1027,11 +1075,11 @@ handleUploadPhoto = () => {
         : null }
 
             <TouchableOpacity style={{marginRight:20,borderWidth:1,marginLeft:Dimensions.get('window').width/2+40,height:35,borderRadius:5,backgroundColor: this.state.ButtonStateHolder || !this.state.validPan ? 'rgba(42,145,52,0.3)':'#2A9134',marginBottom:20,}}
-           // disabled={this.state.ButtonStateHolder || 
-            //    this.state.collegename == '' || 
-             //   this.state.startdate == '' || this.state.enddate == '' ||
-              //  this.state.pincode=='' || this.state.city=='' || this.state.state ||
-               // this.state.locality=='' || this.state.address==''}
+            disabled={this.state.ButtonStateHolder || 
+                this.state.collegename == '' || 
+                this.state.startdate == '' || this.state.enddate == '' ||
+                this.state.pincode=='' || this.state.city=='' || this.state.state ||
+                this.state.locality=='' || this.state.address==''}
             onPress={()=> this.setState({showCircleImg:!this.state.showCircleImg})}
             onPress={() => {this.insertdata_into_db();}}
             onPress={() => this.props.navigation.navigate('bankdetails')}

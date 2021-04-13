@@ -6,7 +6,8 @@ import circle from '../../assets/circle.png';
 import check_circle from '../../assets/check_circle.png';
 import DocumentPicker from 'react-native-document-picker';
 import { Platform } from 'react-native';
-
+import { BASE_URL_PYTHON } from '@env'
+import { BASE_URL_PHP } from '@env'
 
 var ImagePicker = require('react-native-image-picker');
 
@@ -96,6 +97,8 @@ export default class Employerdetails extends React.Component{
             customerid:'',
             pdf:null,
             filename:'',
+            latitude:0,
+            longitude:0,
             array:['employeeid_front', 'employeeid_back','payslip1']
         };
         this.onSubmit = this.onSubmit.bind(this);
@@ -159,22 +162,35 @@ export default class Employerdetails extends React.Component{
         type: [DocumentPicker.types.allFiles],
       });
       if(res) {
+        console.log("REs",res);
         let uri = res.uri;
         if(Platform.OS === 'ios') {
           uri = res.uri.replace('file://','');
         }
         console.log('URI : ' + uri);
-        FileViewer.open(uri)
-          .then(() => {
-            // Do whatever you want
-            console.log('Success');
-          })
-          .catch(_err => {
-            // Do whatever you want
-            console.log(_err);
-          });
+        this.setState({
+          type:'.pdf',
+
+          cameraClicked:true,
+          modalVisible:false,
+          fileUri:'https://is5-ssl.mzstatic.com/image/thumb/Purple114/v4/6c/5f/34/6c5f3452-e360-5122-b792-22824bda618a/AppIcon-0-1x_U007emarketing-0-7-0-85-220.png/1200x630wa.png'
+        })
+
+      //   this.setState({
+      //     photo:response,
+      //     filePath: response,
+      //     fileData: response.data,
+      //     fileUri: response.uri,
+      //     type:response.type,
+      // //    imagename:'employeeid_front',
+      //    // cameraClicked:true,
+      //     idfrontclicked:true,
+      //     modalVisible:false
+      //   });
+       
       }
     } catch (err) {
+      console.log("Err",err);
       if (DocumentPicker.isCancel(err)) {
         alert('Canceled');
       } else {
@@ -197,6 +213,31 @@ export default class Employerdetails extends React.Component{
     </>
   ) : null;
   */
+
+  requestCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: "App Camera Permission",
+          message:"App needs access to your camera "
+         // buttonNeutral: "Ask Me Later",
+         // buttonNegative: "Cancel",
+         // buttonPositive: "OK"
+        }
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log("Camera permission given");
+      } else {
+        console.log("Camera permission denied");
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+
+
 
 
   
@@ -398,7 +439,8 @@ export default class Employerdetails extends React.Component{
   renderIdfront() {
     if (this.state.fileUri) {
 
-      return <View style={{flexDirection:'row'}}><Image
+      return <View style={{flexDirection:'row'}}>
+        <Image
       source={{ uri: this.state.fileUri }}
       style={{width:150, height:150,borderRadius:5, borderColor:'#000000', borderWidth:0.5, marginHorizontal:0}}
     />
@@ -432,7 +474,7 @@ export default class Employerdetails extends React.Component{
   }
 
   renderPayslip() {
-    if(this.state.type != '.pdf') {
+   // if(this.state.type != '.pdf') {
       if (this.state.fileUri) {
       return <View style={{flexDirection:'row'}}>
         <Image
@@ -446,21 +488,25 @@ export default class Employerdetails extends React.Component{
      </View>
      </View>
      } 
-    } else if (this.state.type == '.pdf') {
-      <View style={{flexDirection:'row'}}>
-        <View style={{width:150, height:150,borderRadius:5, borderColor:'#000000', borderWidth:0.5, marginHorizontal:0}}>
-        <Pdf
-        source = {this.state.fileUri}
-        style={{width:150,height:150, marginBottom:0}}
-      />
-      </View>
-        <View style={{marginLeft:Dimensions.get('window').width/7-80}}>
-      <TouchableOpacity onPress={this.removeImage} >
-      <Image source={require('../../assets/add_circle.png')} style={{height:20,width:20,}} />
-      </TouchableOpacity>
-     </View>
-      </View>
-    }
+  // //  } else  {
+  //     <View style={{flexDirection:'row'}}>
+  //       <View style={{width:150, height:150,borderRadius:5, borderColor:'#000000', borderWidth:0.5, marginHorizontal:0}}>
+  //       {/* <Pdf
+  //       source = {this.state.fileUri}
+  //       style={{width:150,height:150, marginBottom:0}}
+  //     /> */}
+  //      <Image
+  //       source={{ uri: this.state.fileUri }}
+  //       style={{width:150, height:150,borderRadius:5, borderColor:'#000000', borderWidth:0.5, marginHorizontal:0}}
+  //     />
+  //     </View>
+  //       <View style={{marginLeft:Dimensions.get('window').width/7-80}}>
+  //     <TouchableOpacity onPress={this.removeImage} >
+  //     <Image source={require('../../assets/add_circle.png')} style={{height:20,width:20,}} />
+  //     </TouchableOpacity>
+  //    </View>
+  //     </View>
+  // //  }
 
   }
 
@@ -561,7 +607,7 @@ export default class Employerdetails extends React.Component{
 
     insertdata_into_db = async () => {
         console.log('test');
-       await fetch('http://10.0.2.2:8000/employerdetails/',
+       await fetch(BASE_URL_PYTHON+'/employerdetails',
       {
         method:'POST',
         headers:{
@@ -585,6 +631,8 @@ export default class Employerdetails extends React.Component{
             "employee_id_card":this.state.noemail,
             "payslip":this.state.payslip,
             "confirmation_for_id_card":this.state.noemail,
+            "office_address_latitude":this.state.latitude,
+            "office_address_longitude":this.state.longitude
           }
           )
       }).then((response) =>response.json())
@@ -598,7 +646,7 @@ export default class Employerdetails extends React.Component{
 
     updateSalesforce = () => {
       console.log('salesforce');
-      fetch('http://uat-newapioth.monexo.co/api/saleForceUpdateRecords',
+      fetch(BASE_URL_PHP+'/saleForceUpdateRecords',
       {
           method:'POST',
           headers:{
@@ -687,53 +735,133 @@ export default class Employerdetails extends React.Component{
             });
     };
 
-
-    fetchCity = (text) => {
-      console.log('geospoc-city');
-      fetch('http://127.0.0.1:8000/addressAutofill/getCity/'+text)
+    fetchCitygovt = (text) => {
+      //console.log('test');
+      //console.log(text);
+      fetch('https://api.data.gov.in/resource/0a076478-3fd3-4e2c-b2d2-581876f56d77?format=json&api-key=579b464db66ec23bdd000001be9925f848ef448249d6231c74b87637&filters[pincode]='+text)
           .then((response) => response.json())
           .then((responseJson) => {
-             console.log(responseJson);
-              //if(responseJson.status=='ok'){
-              //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-             //}
+             // console.log("response:", responseJson.records);
+              // console.log(responseJson.records[0]);
+              let records = responseJson.records;
+              //console.log(records[Object.keys(records)[0]].regionname);
+              //console.log(records[Object.keys(records)[0]].statename);
+              if(responseJson.status=='ok'){
+                  this.setState({city:records[Object.keys(records)[0]].regionname})   //city:records[Object.keys(records)[0]].regionname
+             }
           })
           .catch((error) => {
               console.error(error);
           });
   };
 
-  fetchLocality = async () => {
-      await delay(3000)
-      console.log('geospoc-locality');
-      fetch('http://127.0.0.1:8000/addressAutofill/getLocalities/'+this.state.city+this.state.pincode)
-          .then((response) => response.json())
-          .then((responseJson) => {
-             console.log(responseJson);
-              //if(responseJson.status=='ok'){
-              //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-             //}
-          })
-          .catch((error) => {
-              console.error(error);
-          });
-  };
+  fetchCity = () => {
+    // console.log(this.state.pincode);
+     fetch(BASE_URL_PYTHON+'/addressAutofill/getCity',
+     {
+         method:'POST',
+         headers:{
+           Accept: 'application/json',
+           'Content-Type': 'application/json',
+         },
+         body:
+           JSON.stringify({
+             "pincode":this.state.pincode
+           })
+       }).then((response) =>response.json())
+         .then((responseJson) =>{
+        // console.log(responseJson)
+       //  console.log("city",responseJson.data.city)
+         this.setState({city:responseJson.data.city})
+         }).catch((error) =>
+         {
+           console.error(error);
+         });
+ };
 
-  fetchSubLocality = async () => {
-      await delay(5000)
-      console.log('geospoc-sublocality');
-      fetch('http://127.0.0.1:8000/addressAutofill/getSubLocalities/'+this.state.city+this.state.pincode+this.state.locality)
-          .then((response) => response.json())
-          .then((responseJson) => {
-             console.log(responseJson);
-              //if(responseJson.status=='ok'){
-              //    this.setState({state:records[Object.keys(records)[0]].statename})   //city:records[Object.keys(records)[0]].regionname
-             //}
-          })
-          .catch((error) => {
-              console.error(error);
-          });
-  };
+ fetchLocality = async () => {
+     await delay(3000)
+     console.log('geospoc-locality');
+     fetch(BASE_URL_PYTHON+'/addressAutofill/getLocalities',
+     {
+         method:'POST',
+         headers:{
+           Accept: 'application/json',
+           'Content-Type': 'application/json',
+         },
+         body:
+           JSON.stringify({
+             "city":this.state.city,
+             "pincode":this.state.pincode,
+           })
+       }).then((response) =>response.json())
+         .then((responseJson) =>{
+         //console.log(responseJson)
+        // console.log(responseJson.data.localities[0])
+         this.setState({locality:responseJson.data.localities[0]})
+         }).catch((error) =>
+         {
+           console.error(error);
+         });
+ };
+
+ fetchSubLocality = async () => {
+     await delay(5000)
+   //  console.log('geospoc-sublocality');
+     fetch(BASE_URL_PYTHON+'/addressAutofill/getSubLocalities',
+     {
+         method:'POST',
+         headers:{
+           Accept: 'application/json',
+           'Content-Type': 'application/json',
+         },
+         body:
+           JSON.stringify({
+             "city":this.state.city,
+             "pincode":this.state.pincode,
+             "locality":this.state.locality,
+           })
+       }).then((response) =>response.json())
+         .then((responseJson) =>{
+        // console.log(responseJson)
+        // console.log(responseJson.data.subLocalities[0])
+         this.setState({sublocality:responseJson.data.subLocalities[0]})
+         }).catch((error) =>
+         {
+           console.error(error);
+         });
+ };
+
+ fetchLatLong = async () => {
+     await delay(5000)
+     console.log('geospoc-latlong');
+     fetch(BASE_URL_PYTHON+'/geocode',
+     {
+         method:'POST',
+         headers:{
+           Accept: 'application/json',
+           'Content-Type': 'application/json',
+         },
+         body:
+           JSON.stringify({
+             "address":this.state.address,
+             "city":this.state.city,
+             "pincode":this.state.pincode,
+           })
+       }).then((response) =>response.json())
+         .then((responseJson) =>{
+        // console.log(responseJson)
+        // console.log(responseJson.data.latitude)
+       //  console.log(responseJson.data.longitude)
+         this.setState({latitude:responseJson.data.latitude, 
+             longitude:responseJson.data.longitude})
+         }).catch((error) =>
+         {
+           console.error(error);
+         });
+ };
+
+
 
   // body = new FormData();
 //body.append('photo', {uri: imagePath,name: 'photo.png',filename :'imageName.png',type: 'image/png'});
@@ -774,7 +902,7 @@ createFormData = (photo, body) => {
 
 handleUploadPhoto = () => {
   console.log(this.state.photo.fileName);
-  fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
+  fetch(BASE_URL_PHP+'/uploadDocument',
   {
     method:'POST',
     headers:{  
@@ -1066,7 +1194,7 @@ fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
             <HelperText style={{color:'#000000',opacity:0.3,marginLeft:0}}>Pin code</HelperText>
             <TextInput placeholder=' ' value={this.state.pincode}
             keyboardType='numeric' maxLength={6}
-            onChangeText={(text) => {this.onChanged(text); this.fetchData(text);this.fetchCity(text);this.fetchLocality();this.fetchSubLocality();}}
+            onChangeText={(text) => {this.onChanged(text); this.fetchData(text);this.fetchCity();this.fetchLocality();this.fetchSubLocality();}}
             placeholderTextColor = "#000000" style={{flex:1,marginTop: 10,height:48,marginLeft:-65, width:'95%', color:'#000000', fontFamily:'Nunito',}}
             />
             </View>
@@ -1201,7 +1329,7 @@ fetch('http://uat-newapioth.monexo.co/api/uploadDocument',
                 <Text style={styles.btnText}>Take a photo</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={this.launchImageLibrary} style={styles.btnSection, {margin:20,}}  >  
+              <TouchableOpacity onPress={this.selectFile} style={styles.btnSection, {margin:20,}}  >  
                 <Text style={styles.btnText}>Choose from the device folders</Text>
               </TouchableOpacity>
               </View>
